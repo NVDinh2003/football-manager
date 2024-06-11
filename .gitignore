@@ -6,6 +6,7 @@ target/
 
 **/resource/*.json
 **/StoredCredentials
+**/StoredCredential
 
 
 ### STS ###
