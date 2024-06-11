@@ -23,8 +23,8 @@ public class Equipment {
     private String name;
     private int quantity = 0;
     @Enumerated(EnumType.STRING)
-    @Column(length = 6, nullable = false)
-    private EquipmentCondition condition = EquipmentCondition.NEW;
+    @Column(length = 6, nullable = false, columnDefinition = "enum('NEW','GOOD','WORN','BROKEN') DEFAULT 'NEW'")
+    private EquipmentCondition condition;
 
     @ManyToOne
     @JoinColumn(name = "team_id", nullable = false)

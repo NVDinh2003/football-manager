@@ -20,7 +20,7 @@ public class Match extends BaseModel {
 
     @Column(name = "team1_scored")
     private int team1Scored = 0;
-    @Column(name = "team1_scored")
+    @Column(name = "team2_scored")
     private int team2Scored = 0;
     private LocalDateTime time;
     private String venue;

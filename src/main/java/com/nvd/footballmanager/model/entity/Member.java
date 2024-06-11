@@ -1,6 +1,6 @@
 package com.nvd.footballmanager.model.entity;
 
-import com.nvd.footballmanager.model.enums.Role;
+import com.nvd.footballmanager.model.enums.MemberRole;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -30,7 +30,7 @@ public class Member {
     private int shirtNumber;
     @Enumerated(EnumType.STRING)    // giá trị của enum sẽ được lưu dưới dạng string trong db
     @Column(length = 16)
-    private Role role;
+    private MemberRole role;
     private double fee;
 
     @ManyToMany

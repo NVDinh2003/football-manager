@@ -25,8 +25,8 @@ public class MembershipRequest {
 
 
     @Enumerated(EnumType.STRING)
-    @Column(length = 8, nullable = false)
-    private MembershipRequestStatus status = MembershipRequestStatus.PENDING;
+    @Column(length = 8, nullable = false, columnDefinition = "enum('PENDING','ACCEPTED','REJECTED') NOT NULL DEFAULT 'PENDING'")
+    private MembershipRequestStatus status;
     private LocalDate requestDate;
     private LocalDate responseDate;
 

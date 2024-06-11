@@ -1,6 +1,6 @@
 package com.nvd.footballmanager.model.enums;
 
-public enum Role {
+public enum MemberRole {
     MANAGER,
     MEMBER,
     EXTERNAL_MEMBER

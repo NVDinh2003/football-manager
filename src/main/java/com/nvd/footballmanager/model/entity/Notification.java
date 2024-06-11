@@ -18,6 +18,6 @@ public class Notification extends BaseModel {
 
     private String message;
     @Enumerated(EnumType.STRING)
-    @Column(length = 6, nullable = false)
-    private NotificationStatus status = NotificationStatus.UNREAD;
+    @Column(length = 6, nullable = false, columnDefinition = "enum('UNREAD','READ') NOT NULL DEFAULT 'UNREAD'")
+    private NotificationStatus status;
 }

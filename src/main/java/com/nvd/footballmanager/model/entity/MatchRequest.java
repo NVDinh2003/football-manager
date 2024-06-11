@@ -16,20 +16,20 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Getter
 @Setter
-@Table(name = "match_request")
+@Table(name = "match_requests")
 public class MatchRequest extends BaseModel {
 
     private LocalDateTime time;
     private String venue;
     private String locationDetails;
     @Enumerated(EnumType.STRING)
-    @Column(length = 15, nullable = false)
+    @Column(length = 15, columnDefinition = "enum('FIVE_A_SIDE','SEVEN_A_SIDE','ELEVEN_A_SIDE')")
     private MatchType matchType;
     @Column(columnDefinition = "TEXT")
     private String note;
     @Enumerated(EnumType.STRING)
-    @Column(length = 5, nullable = false)
-    private MatchRequestStatus status = MatchRequestStatus.NEW;
+    @Column(length = 5, nullable = false, columnDefinition = "enum('NEW','DONE') DEFAULT 'NEW'")
+    private MatchRequestStatus status;
 
     @OneToOne(mappedBy = "matchRequest")
     private Feed feed;

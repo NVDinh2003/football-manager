@@ -7,14 +7,12 @@ import com.nvd.footballmanager.repository.BaseRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.MappedSuperclass;
 import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 @MappedSuperclass
-@RequiredArgsConstructor
 public abstract class BaseService<E extends BaseModel,
         DTO extends BaseDTO<ID>,
         ID extends UUID> {
@@ -22,6 +20,12 @@ public abstract class BaseService<E extends BaseModel,
 
     private final BaseRepository<E, ID> baseRepository;
     private final BaseMapper<E, DTO> baseMapper;
+
+
+    protected BaseService(BaseRepository<E, ID> baseRepository, BaseMapper<E, DTO> baseMapper) {
+        this.baseRepository = baseRepository;
+        this.baseMapper = baseMapper;
+    }
 
     public List<DTO> findAll() {
         return baseMapper.convertListToDTO(baseRepository.findAll());

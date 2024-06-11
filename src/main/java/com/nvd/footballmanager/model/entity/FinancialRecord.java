@@ -18,7 +18,8 @@ import java.time.LocalDate;
 @Table(name = "financial_records")
 public class FinancialRecord extends BaseModel {
     @Enumerated(EnumType.STRING)
-    @Column(length = 7, nullable = false)// giá trị của enum sẽ được lưu dưới dạng string trong db
+    @Column(length = 7, nullable = false, columnDefinition = "enum('INCOME','EXPENSE') NOT NULL")
+// giá trị của enum sẽ được lưu dưới dạng string trong db
     private FinancialRecordType type;
     private String note;
     private double amount;

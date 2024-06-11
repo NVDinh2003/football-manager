@@ -2,30 +2,23 @@ package com.nvd.footballmanager.model.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.nvd.footballmanager.model.BaseModel;
-import com.nvd.footballmanager.model.enums.Role;
+import com.nvd.footballmanager.model.enums.UserRole;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 
 import java.sql.Date;
-import java.util.Collection;
-import java.util.List;
 import java.util.Set;
 
 @Entity
 @AllArgsConstructor
-@NoArgsConstructor
 @Getter
 @Setter
-@Table(name = "accounts")
-public class User extends BaseModel implements UserDetails {
+@Table(name = "users")
+public class User extends BaseModel {
 
-    @Column(nullable = false, length = 20)
+    @Column(nullable = false, length = 30)
     private String username;
     @Column(nullable = false, length = 75)
     @JsonIgnore
@@ -36,13 +29,16 @@ public class User extends BaseModel implements UserDetails {
     private Date dateOfBirth;
     @Column(nullable = false, unique = true, length = 50)
     private String email;
-    @Column(nullable = false, unique = true, length = 15)
+    @Column(unique = true, length = 15)
     private String phoneNumber;
     private String avatar;
-
     @Enumerated(EnumType.STRING)    // giá trị của enum sẽ được lưu dưới dạng string trong db
-    @Column(length = 16)
-    private Role role;
+    @Column(length = 9)
+    private UserRole role;
+    @Column(columnDefinition = "boolean default false")
+    private Boolean enabled = false;
+    @JsonIgnore
+    private Long verificationCode;
 
     // các entity con sẽ tự động bị xóa khỏi db nếu không còn được tham chiếu bởi entity cha.
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -51,29 +47,7 @@ public class User extends BaseModel implements UserDetails {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<MembershipRequest> membershipRequests;
 
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority(role.name()));
-    }
-
-
-    @Override
-    public boolean isAccountNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isAccountNonLocked() {
-        return true;
-    }
-
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return true;
+    public User() {
+        this.enabled = false;
     }
 }
