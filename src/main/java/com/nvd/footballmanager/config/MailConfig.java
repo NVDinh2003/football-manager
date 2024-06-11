@@ -5,8 +5,6 @@ import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInsta
 import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver;
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
 import com.google.api.client.googleapis.auth.oauth2.GoogleClientSecrets;
-import com.google.api.client.googleapis.auth.oauth2.GoogleRefreshTokenRequest;
-import com.google.api.client.googleapis.auth.oauth2.GoogleTokenResponse;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
@@ -68,23 +66,6 @@ public class MailConfig {
             e.printStackTrace();
             return null;
         }
-    }
-
-
-    private Credential refreshCredentials(Credential credential) throws IOException {
-        if (credential.getRefreshToken() != null) {
-            GoogleRefreshTokenRequest request = new GoogleRefreshTokenRequest(
-                    new NetHttpTransport(),
-                    JSON_FACTORY,
-                    credential.getRefreshToken(),
-                    CLIENT_ID,
-                    CLIENT_SECRET);
-
-            GoogleTokenResponse response = request.execute();
-            credential.setAccessToken(response.getAccessToken());
-            return credential;
-        }
-        return null;
     }
 
 }
