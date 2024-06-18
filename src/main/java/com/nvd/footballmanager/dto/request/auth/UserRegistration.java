@@ -19,5 +19,7 @@ public class UserRegistration {
     private String name;
     @Email(message = "Email invalid")
     private String email;
+    @NotBlank(message = "Password not blank")
+    @Size(min = 8, message = "Password must be 8 characters or more")
     private String password;
 }

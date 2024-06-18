@@ -1,7 +1,7 @@
 package com.nvd.footballmanager.controller;
 
-import com.nvd.footballmanager.dto.ApiResponse;
 import com.nvd.footballmanager.dto.BaseDTO;
+import com.nvd.footballmanager.dto.CustomApiResponse;
 import com.nvd.footballmanager.model.BaseModel;
 import com.nvd.footballmanager.service.BaseService;
 import jakarta.persistence.MappedSuperclass;
@@ -26,33 +26,33 @@ public abstract class BaseController<E extends BaseModel,
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponse> findAll() {
+    public ResponseEntity<CustomApiResponse> findAll() {
         List<DTO> dtos = baseService.findAll();
 
-        return ResponseEntity.ok(ApiResponse.success(dtos));
+        return ResponseEntity.ok(CustomApiResponse.success(dtos));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse> findById(@PathVariable("id") ID id) {
-        return ResponseEntity.ok(ApiResponse.success(baseService.findById(id)));
+    public ResponseEntity<CustomApiResponse> findById(@PathVariable("id") ID id) {
+        return ResponseEntity.ok(CustomApiResponse.success(baseService.findById(id)));
     }
 
     @PostMapping
-    public ResponseEntity<ApiResponse> create(@RequestBody @Valid DTO dto) {
-        return ResponseEntity.ok(ApiResponse.created(baseService.create(dto)));
+    public ResponseEntity<CustomApiResponse> create(@RequestBody @Valid DTO dto) {
+        return ResponseEntity.ok(CustomApiResponse.created(baseService.create(dto)));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse> update(
+    public ResponseEntity<CustomApiResponse> update(
             @PathVariable("id") ID id,
             @RequestBody @Valid DTO dto
     ) {
-        return ResponseEntity.ok(ApiResponse.success(baseService.update(id, dto)));
+        return ResponseEntity.ok(CustomApiResponse.success(baseService.update(id, dto)));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse> delete(@PathVariable("id") ID id) {
+    public ResponseEntity<CustomApiResponse> delete(@PathVariable("id") ID id) {
         baseService.deleteById(id);
-        return ResponseEntity.ok(ApiResponse.noContent());
+        return ResponseEntity.ok(CustomApiResponse.noContent());
     }
 }

@@ -1,6 +1,7 @@
 package com.nvd.footballmanager.controller;
 
-import com.nvd.footballmanager.dto.ApiResponse;
+import com.nvd.footballmanager.config.CustomLogoutHandler;
+import com.nvd.footballmanager.dto.CustomApiResponse;
 import com.nvd.footballmanager.dto.request.auth.UserLogin;
 import com.nvd.footballmanager.dto.request.auth.UserRegistration;
 import com.nvd.footballmanager.dto.response.auth.LoginResponse;
@@ -11,6 +12,8 @@ import com.nvd.footballmanager.exceptions.IncorrectVerificationCodeException;
 import com.nvd.footballmanager.exceptions.UserDoesNotExistException;
 import com.nvd.footballmanager.service.UserService;
 import com.nvd.footballmanager.service.auth.TokenService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -21,14 +24,17 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.Map;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/api/auth")
 @CrossOrigin("*")
 @RequiredArgsConstructor
 public class AuthenticationController {
 
+    private final CustomLogoutHandler customLogoutHandler;
     private final UserService userService;
     private final TokenService tokenService;
     private final AuthenticationManager authenticationManager;
@@ -36,19 +42,19 @@ public class AuthenticationController {
 
     @ExceptionHandler({EmailAlreadyTakenException.class})
     public ResponseEntity<String> handleEmailTaken() {
-        return new ResponseEntity<>("The email you provided is already in use", HttpStatus.CONFLICT);
+        return new ResponseEntity<>("The email you provided is already in use!", HttpStatus.CONFLICT);
     }
 
     @PostMapping("/register")
-    public ApiResponse register(@RequestBody @Valid UserRegistration userRegistration) {
+    public CustomApiResponse register(@RequestBody @Valid UserRegistration userRegistration) {
         UserDTO userDTO = userService.registerUser(userRegistration);
 
-        return ApiResponse.created(userDTO);
+        return CustomApiResponse.created(userDTO);
     }
 
     @ExceptionHandler({UserDoesNotExistException.class})
     public ResponseEntity<String> handleUserDoesntExist() {
-        return new ResponseEntity<String>("The user you are looking for does not exist!", HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>("The user you are looking for does not exist!", HttpStatus.NOT_FOUND);
     }
 
 
@@ -69,15 +75,15 @@ public class AuthenticationController {
     }
 
     @PostMapping("/email/verify")
-    public ApiResponse verifyEmail(@RequestBody LinkedHashMap<String, String> body) {
+    public CustomApiResponse verifyEmail(@RequestBody LinkedHashMap<String, String> body) {
         Long code = Long.parseLong(body.get("code"));
         String username = body.get("username");
         UserDTO userDTO = userService.verifyEmail(username, code);
-        return ApiResponse.created(userDTO);
+        return CustomApiResponse.created(userDTO);
     }
 
     @PostMapping("/login")
-    public ApiResponse login(@RequestBody @Valid UserLogin userLogin) {
+    public CustomApiResponse login(@RequestBody @Valid UserLogin userLogin) {
 
         LoginResponse loginResponse;
 //
@@ -85,11 +91,40 @@ public class AuthenticationController {
         try {
             Authentication auth = authenticationManager
                     .authenticate(new UsernamePasswordAuthenticationToken(userLogin.getUsername(), userLogin.getPassword()));
-            String token = tokenService.generateToken(auth);
-            loginResponse = new LoginResponse(userService.getUserByUsername(userLogin.getUsername()), token);
+//            UserDTO userDTO = userService.getUserByUsername(userLogin.getUsername());
+            String accessToken = tokenService.generateAccessToken(auth);
+            String refreshToken = tokenService.generateRefreshToken(auth);
+            loginResponse = new LoginResponse(accessToken, refreshToken);
         } catch (AuthenticationException e) {
-            loginResponse = new LoginResponse(null, "");
+            loginResponse = new LoginResponse("", "");
         }
-        return ApiResponse.created(loginResponse);
+        return CustomApiResponse.created(loginResponse);
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<Map<String, String>> refresh(@RequestBody LinkedHashMap<String, String> request) {
+        String refreshToken = request.get("refreshToken");
+
+        if (tokenService.validateToken(refreshToken)) {
+            String username = tokenService.getUsernameFromToken(refreshToken);
+
+            // Create a new Authentication object with the username from the refresh token
+            Authentication authentication = new UsernamePasswordAuthenticationToken(username, null, null);
+
+            // Generate new access token
+            String newAccessToken = tokenService.generateAccessToken(authentication);
+
+            Map<String, String> tokens = new HashMap<>();
+            tokens.put("accessToken", newAccessToken);
+
+            return ResponseEntity.ok(tokens);
+        } else {
+            return ResponseEntity.status(401).build();
+        }
+    }
+
+    @PostMapping("/logout")
+    public void logout(HttpServletRequest request, HttpServletResponse response) {
+        customLogoutHandler.logout(request, response, null);
     }
 }

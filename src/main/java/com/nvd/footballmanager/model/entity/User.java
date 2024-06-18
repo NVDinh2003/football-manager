@@ -25,8 +25,7 @@ public class User extends BaseModel {
     private String password;
     @Column(nullable = false, length = 30)
     private String name;
-    @Column(name = "dob")
-    private Date dateOfBirth;
+    private Date dob;
     @Column(nullable = false, unique = true, length = 50)
     private String email;
     @Column(unique = true, length = 15)

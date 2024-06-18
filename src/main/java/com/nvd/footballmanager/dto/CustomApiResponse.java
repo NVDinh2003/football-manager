@@ -13,7 +13,7 @@ import java.time.Instant;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class ApiResponse {
+public class CustomApiResponse {
     @JsonProperty("message")
     private String message = Constants.SUCCESS;
 
@@ -34,8 +34,8 @@ public class ApiResponse {
     @Builder.Default
     private Instant timestamp = Instant.now();
 
-    public static ApiResponse success(Object o) {
-        return ApiResponse.builder()
+    public static CustomApiResponse success(Object o) {
+        return CustomApiResponse.builder()
                 .message(Constants.SUCCESS)
                 .code(HttpStatus.OK.value())
                 .status(HttpStatus.OK)
@@ -43,8 +43,8 @@ public class ApiResponse {
                 .build();
     }
 
-    public static ApiResponse badRequest(String message) {
-        return ApiResponse.builder()
+    public static CustomApiResponse badRequest(String message) {
+        return CustomApiResponse.builder()
                 .message(message)
                 .code(HttpStatus.BAD_REQUEST.value())
                 .status(HttpStatus.BAD_REQUEST)
@@ -52,8 +52,8 @@ public class ApiResponse {
                 .build();
     }
 
-    public static ApiResponse notFound(String message) {
-        return ApiResponse.builder()
+    public static CustomApiResponse notFound(String message) {
+        return CustomApiResponse.builder()
                 .message(message)
                 .code(HttpStatus.NOT_FOUND.value())
                 .status(HttpStatus.NOT_FOUND)
@@ -61,16 +61,16 @@ public class ApiResponse {
                 .build();
     }
 
-    public static ApiResponse noContent() {
-        return ApiResponse.builder()
+    public static CustomApiResponse noContent() {
+        return CustomApiResponse.builder()
                 .message(Constants.OBJECT_DELETED)
                 .code(HttpStatus.NO_CONTENT.value())
                 .status(HttpStatus.NO_CONTENT)
                 .build();
     }
 
-    public static ApiResponse notFound() {
-        return ApiResponse.builder()
+    public static CustomApiResponse notFound() {
+        return CustomApiResponse.builder()
                 .message(Constants.DATA_NOT_FOUND)
                 .code(HttpStatus.NOT_FOUND.value())
                 .status(HttpStatus.NOT_FOUND)
@@ -78,8 +78,8 @@ public class ApiResponse {
                 .build();
     }
 
-    public static ApiResponse created(Object o) {
-        return ApiResponse.builder()
+    public static CustomApiResponse created(Object o) {
+        return CustomApiResponse.builder()
                 .message(Constants.CREATED)
                 .code(HttpStatus.CREATED.value())
                 .status(HttpStatus.CREATED)
@@ -88,8 +88,8 @@ public class ApiResponse {
     }
 
 
-    public static ApiResponse forbidden() {
-        return ApiResponse.builder()
+    public static CustomApiResponse forbidden() {
+        return CustomApiResponse.builder()
                 .message("Forbidden")
                 .code(HttpStatus.FORBIDDEN.value())
                 .status(HttpStatus.FORBIDDEN)
@@ -97,8 +97,8 @@ public class ApiResponse {
                 .build();
     }
 
-    public static ApiResponse unauthorized() {
-        return ApiResponse.builder()
+    public static CustomApiResponse unauthorized() {
+        return CustomApiResponse.builder()
                 .message("UnAuthorized")
                 .code(HttpStatus.UNAUTHORIZED.value())
                 .status(HttpStatus.UNAUTHORIZED)

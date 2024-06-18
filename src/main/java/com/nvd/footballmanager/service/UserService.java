@@ -1,16 +1,18 @@
 package com.nvd.footballmanager.service;
 
 import com.nvd.footballmanager.dto.request.auth.UserRegistration;
+import com.nvd.footballmanager.dto.response.CloudinaryResponse;
 import com.nvd.footballmanager.dto.user.UserDTO;
-import com.nvd.footballmanager.exceptions.EmailAlreadyTakenException;
-import com.nvd.footballmanager.exceptions.EmailFaildToSendException;
-import com.nvd.footballmanager.exceptions.IncorrectVerificationCodeException;
-import com.nvd.footballmanager.exceptions.UserDoesNotExistException;
+import com.nvd.footballmanager.exceptions.*;
 import com.nvd.footballmanager.mappers.UserMapper;
 import com.nvd.footballmanager.model.entity.User;
 import com.nvd.footballmanager.model.enums.UserRole;
 import com.nvd.footballmanager.repository.UserRepository;
 import com.nvd.footballmanager.service.auth.MailService;
+import com.nvd.footballmanager.service.auth.TokenService;
+import com.nvd.footballmanager.service.cloud.CloudinaryService;
+import com.nvd.footballmanager.utils.Constants;
+import com.nvd.footballmanager.utils.FileUploadUtil;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -18,30 +20,42 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.text.Normalizer;
 import java.util.Collections;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
 @Service
 public class UserService extends BaseService<User, UserDTO, UUID> implements UserDetailsService {
+    //    @Value("${app.upload.dir}")
+//    private static String uploadDir;
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
     private final MailService mailService;
+    private final TokenService tokenService;
+    private final CloudinaryService cloudinaryService;
 
 
     protected UserService(UserRepository userRepository,
                           UserMapper userMapper,
                           PasswordEncoder passwordEncoder,
-                          MailService mailService
+                          MailService mailService,
+                          TokenService tokenService,
+                          CloudinaryService cloudinaryService
     ) {
         super(userRepository, userMapper);
         this.userRepository = userRepository;
         this.userMapper = userMapper;
         this.passwordEncoder = passwordEncoder;
         this.mailService = mailService;
+        this.tokenService = tokenService;
+        this.cloudinaryService = cloudinaryService;
     }
 
     public UserDTO registerUser(UserRegistration userRegistration) {
@@ -76,8 +90,9 @@ public class UserService extends BaseService<User, UserDTO, UUID> implements Use
         return parts[parts.length - 1] + generateNumber;
     }
 
-    public User getUserByUsername(String username) {
-        return userRepository.findByUsername(username).orElseThrow(UserDoesNotExistException::new);
+    public UserDTO getUserByUsername(String username) {
+        User user = userRepository.findByUsername(username).orElseThrow(UserDoesNotExistException::new);
+        return userMapper.convertToDTO(user);
     }
 
 
@@ -131,11 +146,104 @@ public class UserService extends BaseService<User, UserDTO, UUID> implements Use
         return userDetails;
     }
 
+    private void validateUserUpdate(UUID id, UserDTO userRequest) {
+        User existingUser = userRepository.findById(id).orElseThrow(UserDoesNotExistException::new);
+
+        if (!existingUser.getEnabled()) {
+            throw new BadRequestException(Constants.NOT_ACTIVE);
+        }
+
+        validateEmail(existingUser, userRequest.getEmail());
+        validateUsername(existingUser, userRequest.getUsername());
+        validatePhoneNumber(existingUser, userRequest.getPhoneNumber());
+    }
+
+    private void validateEmail(User existingUser, String newEmail) {
+        if (!existingUser.getEmail().equals(newEmail)) {
+            User userWithEmail = userRepository.findByEmail(newEmail);
+            if (userWithEmail != null) {
+                throw new BadRequestException(Constants.EMAIL_ALREADY_EXISTS);
+            }
+        }
+    }
+
+    private void validateUsername(User existingUser, String newUsername) {
+        if (!existingUser.getUsername().equals(newUsername)) {
+            Optional<User> userWithUsername = userRepository.findByUsername(newUsername);
+            if (userWithUsername.isPresent()) {
+                throw new BadRequestException(Constants.USERNAME_ALREADY_EXISTS);
+            }
+        }
+    }
+
+    private void validatePhoneNumber(User existingUser, String phoneNumber) {
+        if (!existingUser.getPhoneNumber().equals(phoneNumber)) {
+            User userWithPhoneNumber = userRepository.findByPhoneNumber(phoneNumber);
+            if (userWithPhoneNumber != null) {
+                throw new BadRequestException(Constants.PHONE_NUMBER_IS_ALREADY_IN_USE);
+            }
+        }
+    }
+
 
     @Override
     public UserDTO update(UUID uuid, UserDTO request) {
-//        validateEmailUpdate(uuid, request);
-
+        validateUserUpdate(uuid, request);
         return super.update(uuid, request);
+    }
+
+    private static final File DIRECTORY = new File("D:\\WorkSpace\\Spring_Project\\FootballManager\\img");
+
+//    @Transactional(rollbackOn = Exception.class)
+//    public UserDTO saveImage(UUID id, MultipartFile file) throws UnableToUpLoadPhotoException {
+//        User currentUser = userRepository.findById(id).orElseThrow(UserDoesNotExistException::new);
+//        if (!DIRECTORY.exists())
+//            DIRECTORY.mkdirs();
+//        try {
+//            // the content type form the request looks something like this img/jpeg
+//            String extension = "." + file.getContentType().split("/")[1];
+//            File img = File.createTempFile("avatar_" + id, extension, DIRECTORY);
+//            String iname = img.getName();
+//            file.transferTo(img);
+////                String imageURL = URL + img.getName();
+//            // Cập nhật avatar cho user
+//            currentUser.setAvatar(img.getName());
+//            User updatedUser = userRepository.save(currentUser);
+//
+//            return userMapper.convertToDTO(updatedUser);
+//        } catch (IOException e) {
+//            throw new UnableToUpLoadPhotoException();
+//        }
+//    }
+
+    @Transactional
+    public UserDTO uploadImage(UUID id, MultipartFile file) {
+        User currentUser = userRepository.findById(id).orElseThrow(UserDoesNotExistException::new);
+
+        FileUploadUtil.assertAllowed(file, FileUploadUtil.IMAGE_PATTERN);
+        final String fileName = FileUploadUtil.getFileName(file.getOriginalFilename());
+        final CloudinaryResponse response = this.cloudinaryService.uploadImage(file, "user/avatar/" + fileName);
+        currentUser.setAvatar(response.getUrl());
+        return userMapper.convertToDTO(userRepository.save(currentUser));
+    }
+
+    public UserDTO getCurrentUser(String token) {
+        String username = null;
+        UserDTO user = null;
+
+        if (token != null && token.startsWith("Bearer ")) { // or token.substring(0, 6).equals("Bearer")
+            String strippedToken = token.substring(7);
+            username = tokenService.getUsernameFromToken(strippedToken);
+        }
+
+        if (username != null) {
+            try {
+                user = userMapper.convertToDTO(userRepository.findByUsername(username).orElse(null));
+            } catch (Exception e) {
+                user = null;
+            }
+        }
+
+        return user;
     }
 }

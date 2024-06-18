@@ -1,6 +1,5 @@
 package com.nvd.footballmanager.dto.response.auth;
 
-import com.nvd.footballmanager.model.entity.User;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -9,6 +8,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class LoginResponse {
-    private User user;
-    private String token;
+    //    private UserDTO user;
+    private String accessToken;
+    private String refreshToken;
 }
