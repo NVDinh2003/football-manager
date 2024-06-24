@@ -11,7 +11,6 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-
 public class UserRegistration {
     @NotBlank(message = "Name not blank")
     @Size(min = 1, max = 30, message = "Size name error")

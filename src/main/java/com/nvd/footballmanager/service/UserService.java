@@ -9,12 +9,13 @@ import com.nvd.footballmanager.model.entity.User;
 import com.nvd.footballmanager.model.enums.UserRole;
 import com.nvd.footballmanager.repository.UserRepository;
 import com.nvd.footballmanager.service.auth.MailService;
-import com.nvd.footballmanager.service.auth.TokenService;
 import com.nvd.footballmanager.service.cloud.CloudinaryService;
 import com.nvd.footballmanager.utils.Constants;
 import com.nvd.footballmanager.utils.FileUploadUtil;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -23,7 +24,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.text.Normalizer;
 import java.util.Collections;
 import java.util.Optional;
@@ -38,7 +38,6 @@ public class UserService extends BaseService<User, UserDTO, UUID> implements Use
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
     private final MailService mailService;
-    private final TokenService tokenService;
     private final CloudinaryService cloudinaryService;
 
 
@@ -46,7 +45,6 @@ public class UserService extends BaseService<User, UserDTO, UUID> implements Use
                           UserMapper userMapper,
                           PasswordEncoder passwordEncoder,
                           MailService mailService,
-                          TokenService tokenService,
                           CloudinaryService cloudinaryService
     ) {
         super(userRepository, userMapper);
@@ -54,7 +52,6 @@ public class UserService extends BaseService<User, UserDTO, UUID> implements Use
         this.userMapper = userMapper;
         this.passwordEncoder = passwordEncoder;
         this.mailService = mailService;
-        this.tokenService = tokenService;
         this.cloudinaryService = cloudinaryService;
     }
 
@@ -137,13 +134,12 @@ public class UserService extends BaseService<User, UserDTO, UUID> implements Use
         GrantedAuthority authority = new SimpleGrantedAuthority(user.getRole().name());
 
         // Tạo UserDetails từ thông tin user (auth)
-        UserDetails userDetails = new org.springframework.security.core.userdetails.User(
+
+        return new org.springframework.security.core.userdetails.User(
                 user.getUsername(),
                 user.getPassword(),
                 Collections.singletonList(authority)
         );
-
-        return userDetails;
     }
 
     private void validateUserUpdate(UUID id, UserDTO userRequest) {
@@ -192,7 +188,7 @@ public class UserService extends BaseService<User, UserDTO, UUID> implements Use
         return super.update(uuid, request);
     }
 
-    private static final File DIRECTORY = new File("D:\\WorkSpace\\Spring_Project\\FootballManager\\img");
+//    private static final File DIRECTORY = new File("D:\\WorkSpace\\Spring_Project\\FootballManager\\img");
 
 //    @Transactional(rollbackOn = Exception.class)
 //    public UserDTO saveImage(UUID id, MultipartFile file) throws UnableToUpLoadPhotoException {
@@ -227,15 +223,10 @@ public class UserService extends BaseService<User, UserDTO, UUID> implements Use
         return userMapper.convertToDTO(userRepository.save(currentUser));
     }
 
-    public UserDTO getCurrentUser(String token) {
-        String username = null;
+    public UserDTO getCurrentUser() {
         UserDTO user = null;
-
-        if (token != null && token.startsWith("Bearer ")) { // or token.substring(0, 6).equals("Bearer")
-            String strippedToken = token.substring(7);
-            username = tokenService.getUsernameFromToken(strippedToken);
-        }
-
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
         if (username != null) {
             try {
                 user = userMapper.convertToDTO(userRepository.findByUsername(username).orElse(null));
@@ -243,7 +234,6 @@ public class UserService extends BaseService<User, UserDTO, UUID> implements Use
                 user = null;
             }
         }
-
         return user;
     }
 }

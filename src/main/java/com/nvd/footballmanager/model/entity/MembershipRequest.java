@@ -2,12 +2,12 @@ package com.nvd.footballmanager.model.entity;
 
 import com.nvd.footballmanager.model.enums.MembershipRequestStatus;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
-import java.time.LocalDate;
+import java.time.Instant;
 import java.util.UUID;
 
 @Entity
@@ -15,20 +15,27 @@ import java.util.UUID;
 @NoArgsConstructor
 @Getter
 @Setter
+@Builder
 @Table(name = "membership_request")
 public class MembershipRequest {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(unique = true, nullable = false, length = 36)
+    @Column(unique = true, nullable = false, columnDefinition = "VARCHAR(36)")
+    @JdbcTypeCode(SqlTypes.VARCHAR)
     private UUID id;
 
 
     @Enumerated(EnumType.STRING)
     @Column(length = 8, nullable = false, columnDefinition = "enum('PENDING','ACCEPTED','REJECTED') NOT NULL DEFAULT 'PENDING'")
     private MembershipRequestStatus status;
-    private LocalDate requestDate;
-    private LocalDate responseDate;
+
+    @Column(nullable = false, updatable = false)
+    @CreationTimestamp
+    private Instant requestDate;
+
+    //    @UpdateTimestamp
+    private Instant responseDate = null;
 
 
     //      USER - MEMBERSHIP_REQUEST - TEAM
@@ -40,4 +47,13 @@ public class MembershipRequest {
     @JoinColumn(name = "team_id", nullable = false)
     private Team team;
 
+    @PrePersist
+    protected void onCreate() {
+        this.responseDate = null;
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.responseDate = Instant.now();
+    }
 }

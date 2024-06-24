@@ -2,10 +2,9 @@ package com.nvd.footballmanager.model.entity;
 
 import com.nvd.footballmanager.model.enums.MemberRole;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.util.List;
 import java.util.Set;
@@ -16,11 +15,13 @@ import java.util.UUID;
 @NoArgsConstructor
 @Getter
 @Setter
+@Builder
 @Table(name = "members")
 public class Member {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(unique = true, nullable = false)
+    @Column(unique = true, nullable = false, columnDefinition = "VARCHAR(36)")
+    @JdbcTypeCode(SqlTypes.VARCHAR)
     private UUID id;
 
     @Column(length = 20)

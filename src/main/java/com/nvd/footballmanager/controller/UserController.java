@@ -42,12 +42,6 @@ public class UserController
         return new ResponseEntity<>("error-users:" + ex.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
-//    @GetMapping("/me")// User Details
-//    public CustomApiResponse getCurrentUser(Authentication authentication) {
-//        UserDTO user = userService.getUserByUsername(authentication.getName());
-//        return CustomApiResponse.success(user);
-//    }
-
     @GetMapping("/me")
     public CustomApiResponse getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -70,15 +64,15 @@ public class UserController
     @PutMapping("/upload-image")
     @PreAuthorize("isAuthenticated()")
     public CustomApiResponse upload(
-            @RequestParam("image") MultipartFile file,
-            Authentication authentication) {
+            @RequestParam("image") MultipartFile file) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserDTO userDTO = userService.getUserByUsername(authentication.getName());
-
         return CustomApiResponse.success(userService.uploadImage(userDTO.getId(), file));
     }
 
 
     //    @Operation(summary = "Retrieve all Users", tags = {"users", "get"}, security = @SecurityRequirement(name = "bearerAuth"))
+    @Override
     @Operation(summary = "Retrieve all Users", tags = {"users", "get"})
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Successfully retrieved list of users", content = {
@@ -91,7 +85,7 @@ public class UserController
                     @Content(schema = @Schema(implementation = CustomApiResponse.class), mediaType = "application/json")})
     })
     @GetMapping
-    @PreAuthorize("hasAuthority('ADMIN')")
+//    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<CustomApiResponse> findAll() {
         return super.findAll();
     }

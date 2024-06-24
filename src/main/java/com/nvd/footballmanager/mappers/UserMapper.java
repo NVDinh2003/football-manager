@@ -30,6 +30,6 @@ public interface UserMapper extends BaseMapper<User, UserDTO> {
 
     @Override
     default Optional<UserDTO> convertOptional(Optional<User> user) {
-        return user.map(e -> convertToDTO(e));
+        return user.map(this::convertToDTO);
     }
 }

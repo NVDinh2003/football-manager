@@ -30,7 +30,6 @@ public class Team extends BaseModel {
     @OneToMany(mappedBy = "team2", fetch = FetchType.LAZY)
     private Set<Match> team2;
 
-
     @OneToMany(mappedBy = "team", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Member> members;
 

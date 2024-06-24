@@ -88,9 +88,9 @@ public class CustomApiResponse {
     }
 
 
-    public static CustomApiResponse forbidden() {
+    public static CustomApiResponse forbidden(String message) {
         return CustomApiResponse.builder()
-                .message("Forbidden")
+                .message(message)
                 .code(HttpStatus.FORBIDDEN.value())
                 .status(HttpStatus.FORBIDDEN)
                 .success(false)
