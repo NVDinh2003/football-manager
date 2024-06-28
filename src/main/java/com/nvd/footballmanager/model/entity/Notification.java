@@ -1,23 +1,34 @@
 package com.nvd.footballmanager.model.entity;
 
 import com.nvd.footballmanager.model.BaseModel;
-import com.nvd.footballmanager.model.enums.NotificationStatus;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+
+import java.util.Set;
 
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Setter
+@Builder
 @Table(name = "notifications")
 public class Notification extends BaseModel {
 
-    private String message;
-    @Enumerated(EnumType.STRING)
-    @Column(length = 6, nullable = false, columnDefinition = "enum('UNREAD','READ') NOT NULL DEFAULT 'UNREAD'")
-    private NotificationStatus status;
+    @Column(nullable = false)
+    private String title;
+
+    @Column(nullable = false, columnDefinition = "TEXT")
+    private String content;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "sender_id", nullable = false)
+    private Member sender;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "team_id", nullable = false)
+    private Team team;
+
+    @OneToMany(mappedBy = "notification", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<MemberNotification> recipients;
 }

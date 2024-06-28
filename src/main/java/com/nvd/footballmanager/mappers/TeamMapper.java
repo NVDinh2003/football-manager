@@ -5,11 +5,10 @@ import com.nvd.footballmanager.model.entity.Team;
 import org.mapstruct.Mapper;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 
-import java.util.Optional;
-
 @Mapper(componentModel = "spring",
         nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
 public interface TeamMapper extends BaseMapper<Team, TeamDTO> {
+<<<<<<< Updated upstream
     @Override
     Team convertToEntity(TeamDTO teamDTO);
 
@@ -21,4 +20,9 @@ public interface TeamMapper extends BaseMapper<Team, TeamDTO> {
     default Optional<TeamDTO> convertOptional(Optional<Team> team) {
         return team.map(this::convertToDTO);
     }
+=======
+
+    TeamMapper INSTANCE = Mappers.getMapper(TeamMapper.class);
+
+>>>>>>> Stashed changes
 }

@@ -1,4 +1,10 @@
 package com.nvd.footballmanager.repository;
 
-public interface MatchRequestRepository {
+import com.nvd.footballmanager.model.entity.MatchRequest;
+import org.springframework.stereotype.Repository;
+
+import java.util.UUID;
+
+@Repository
+public interface MatchRequestRepository extends BaseRepository<MatchRequest, UUID> {
 }

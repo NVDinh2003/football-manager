@@ -41,8 +41,9 @@ public class AuthenticationController {
 
 
     @ExceptionHandler({EmailAlreadyTakenException.class})
-    public ResponseEntity<String> handleEmailTaken() {
-        return new ResponseEntity<>("The email you provided is already in use!", HttpStatus.CONFLICT);
+    public ResponseEntity<CustomApiResponse> handleEmailTaken() {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(CustomApiResponse.forbidden("The email you provided is already in use!"));
     }
 
     @PostMapping("/register")
@@ -52,30 +53,35 @@ public class AuthenticationController {
         return CustomApiResponse.created(userDTO);
     }
 
+
     @ExceptionHandler({UserDoesNotExistException.class})
-    public ResponseEntity<String> handleUserDoesntExist() {
-        return new ResponseEntity<>("The user you are looking for does not exist!", HttpStatus.NOT_FOUND);
+    public ResponseEntity<CustomApiResponse> handleUserDoesntExist() {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(CustomApiResponse
+                .forbidden("The user you are looking for does not exist!"));
     }
 
 
     @ExceptionHandler({EmailFaildToSendException.class})
-    public ResponseEntity<String> handleFaildEmail() {
-        return new ResponseEntity<>("Email failed to send, try again in a moment!", HttpStatus.INTERNAL_SERVER_ERROR);
+    public ResponseEntity<CustomApiResponse> handleFaildEmail() {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(CustomApiResponse
+                .forbidden("Email failed to send, try again in a moment!"));
     }
 
     @PostMapping("/email/code")
-    public ResponseEntity<String> createEmailVerification(@RequestBody LinkedHashMap<String, String> body) {
+    public ResponseEntity<String> createEmailVerification(@RequestBody Map<String, String> body) {
         userService.generateEmailVerification(body.get("username"));
         return new ResponseEntity<>("Verification code generated, email sent!", HttpStatus.OK);
     }
 
+
     @ExceptionHandler({IncorrectVerificationCodeException.class})
-    public ResponseEntity<String> incorrectCodeHandler() {
-        return new ResponseEntity<>("The verification code provided is incorrect! ", HttpStatus.CONFLICT);
+    public ResponseEntity<CustomApiResponse> incorrectCodeHandler() {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(CustomApiResponse
+                .badRequest("The verification code provided is incorrect "));
     }
 
     @PostMapping("/email/verify")
-    public CustomApiResponse verifyEmail(@RequestBody LinkedHashMap<String, String> body) {
+    public CustomApiResponse verifyEmail(@RequestBody Map<String, String> body) {
         Long code = Long.parseLong(body.get("code"));
         String username = body.get("username");
         UserDTO userDTO = userService.verifyEmail(username, code);
@@ -83,22 +89,25 @@ public class AuthenticationController {
     }
 
     @PostMapping("/login")
-    public CustomApiResponse login(@RequestBody @Valid UserLogin userLogin) {
+    public ResponseEntity<CustomApiResponse> login(@RequestBody @Valid UserLogin userLogin) {
 
         LoginResponse loginResponse;
 //
 //        return ApiResponse.created(loginResponse);
+        String accessToken = null;
         try {
             Authentication auth = authenticationManager
                     .authenticate(new UsernamePasswordAuthenticationToken(userLogin.getUsername(), userLogin.getPassword()));
 //            UserDTO userDTO = userService.getUserByUsername(userLogin.getUsername());
-            String accessToken = tokenService.generateAccessToken(auth);
+            accessToken = tokenService.generateAccessToken(auth);
             String refreshToken = tokenService.generateRefreshToken(auth);
             loginResponse = new LoginResponse(accessToken, refreshToken);
         } catch (AuthenticationException e) {
             loginResponse = new LoginResponse("", "");
         }
-        return CustomApiResponse.created(loginResponse);
+        if (accessToken == null)
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        return ResponseEntity.ok(CustomApiResponse.success(loginResponse));
     }
 
     @PostMapping("/refresh")

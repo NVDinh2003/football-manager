@@ -2,10 +2,16 @@ package com.nvd.footballmanager.controller;
 
 import com.nvd.footballmanager.dto.BaseDTO;
 import com.nvd.footballmanager.dto.CustomApiResponse;
+<<<<<<< Updated upstream
 import com.nvd.footballmanager.model.BaseModel;
+=======
+import com.nvd.footballmanager.exceptions.AccessDeniedException;
+>>>>>>> Stashed changes
 import com.nvd.footballmanager.service.BaseService;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.MappedSuperclass;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -54,5 +60,16 @@ public abstract class BaseController<E extends BaseModel,
     public ResponseEntity<CustomApiResponse> delete(@PathVariable("id") ID id) {
         baseService.deleteById(id);
         return ResponseEntity.ok(CustomApiResponse.noContent());
+    }
+
+    @ExceptionHandler({AccessDeniedException.class})
+    public ResponseEntity<CustomApiResponse> handleAccessDenied(AccessDeniedException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(CustomApiResponse.forbidden(ex.getMessage()));
+    }
+
+
+    @ExceptionHandler({EntityNotFoundException.class})
+    public ResponseEntity<CustomApiResponse> handleEntityNotFound(EntityNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(CustomApiResponse.notFound(ex.getMessage()));
     }
 }

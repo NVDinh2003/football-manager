@@ -1,4 +1,10 @@
 package com.nvd.footballmanager.repository;
 
-public interface FeedRepository {
+import com.nvd.footballmanager.model.entity.Feed;
+import org.springframework.stereotype.Repository;
+
+import java.util.UUID;
+
+@Repository
+public interface FeedRepository extends BaseRepository<Feed, UUID> {
 }

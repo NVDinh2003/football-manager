@@ -36,4 +36,6 @@ public class Team extends BaseModel {
 
     @OneToMany(mappedBy = "team", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<MembershipRequest> membershipRequests;
+
+
 }

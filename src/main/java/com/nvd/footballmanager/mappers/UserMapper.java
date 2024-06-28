@@ -8,8 +8,6 @@ import org.mapstruct.Mapping;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.mapstruct.factory.Mappers;
 
-import java.util.Optional;
-
 // đặt trên 1 interface để tạo 1 lớp Mapper tương ứng,
 @Mapper(componentModel = "spring", // tạo ra dưới dạng 1 bean trong spring
         // thuộc tính obj nguồn = null, thì thuộc tính obj đích = gt hiện tại or null
@@ -27,9 +25,12 @@ public interface UserMapper extends BaseMapper<User, UserDTO> {
     UserDTO convertToDTO(User entity);
 
     User convertForRegister(UserRegistration userRegistration);
+<<<<<<< Updated upstream
 
     @Override
     default Optional<UserDTO> convertOptional(Optional<User> user) {
         return user.map(e -> convertToDTO(e));
     }
+=======
+>>>>>>> Stashed changes
 }

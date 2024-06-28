@@ -16,7 +16,9 @@ public interface BaseMapper<E, DTO> {
 
     List<E> convertListToEntity(List<DTO> dtoList);
 
-    Optional<DTO> convertOptional(Optional<E> optionalE);
+    default Optional<DTO> convertOptional(Optional<E> optionalE) {
+        return optionalE.map(this::convertToDTO);
+    }
 
     // ánh xạ dữ liệu từ DTO vào entity này
     E updateEntity(DTO dto, @MappingTarget E entity);

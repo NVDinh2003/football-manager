@@ -14,7 +14,7 @@ public interface UserRepository extends BaseRepository<User, UUID> {
 
     User findByEmail(String email);
 
-    User findByPhoneNumber(String phoneNumber);
+    Optional<User> findByPhoneNumber(String phoneNumber);
 
     boolean existsByRole(UserRole role);
 }

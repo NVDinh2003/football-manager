@@ -36,10 +36,11 @@ public class UserController
         super(userService);
         this.userService = userService;
     }
-
+    
     @ExceptionHandler({BadRequestException.class})
-    public ResponseEntity<String> handleEmailTaken(BadRequestException ex) {
-        return new ResponseEntity<>("error-users:" + ex.getMessage(), HttpStatus.BAD_REQUEST);
+    public ResponseEntity<CustomApiResponse> handleBadRequest(BadRequestException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(CustomApiResponse
+                .badRequest(ex.getMessage()));
     }
 
 //    @GetMapping("/me")// User Details
@@ -58,13 +59,15 @@ public class UserController
 
 
     @ExceptionHandler({UnableToUpLoadPhotoException.class})
-    public ResponseEntity<String> handleEmailTaken() {
-        return new ResponseEntity<>("Săm thing roong to upload avatar!", HttpStatus.NOT_ACCEPTABLE);
+    public ResponseEntity<CustomApiResponse> handleUploadImage() {
+        return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body(CustomApiResponse
+                .badRequest("Săm thing roong to upload avatar!"));
     }
 
     @ExceptionHandler({FileErrorException.class})
-    public ResponseEntity<String> handleEmailTaken(FileErrorException ex) {
-        return new ResponseEntity<>("error:" + ex.getMessage(), HttpStatus.BAD_REQUEST);
+    public ResponseEntity<CustomApiResponse> handleEmailTaken(FileErrorException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(CustomApiResponse
+                .badRequest(ex.getMessage()));
     }
 
     @PutMapping("/upload-image")

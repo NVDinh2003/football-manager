@@ -16,4 +16,8 @@ public class Constants {
     public static final String HEADER_STRING = "Authorization";
     public static final String NOT_ACCEPTED = "NOT_ACCEPTED";
     public static final String OBJECT_ALREADY_EXISTS = "OBJECT_ALREADY_EXISTS";
+<<<<<<< Updated upstream
+=======
+    public static final String ENTITY_NOT_FOUND = "Entity not found brủh";
+>>>>>>> Stashed changes
 }

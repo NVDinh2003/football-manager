@@ -2,16 +2,14 @@ package com.nvd.footballmanager.model.entity;
 
 import com.nvd.footballmanager.model.BaseModel;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Setter
+@Builder
 @Table(name = "comments")
 public class Comment extends BaseModel {
     @Column(nullable = false, columnDefinition = "TEXT")
@@ -22,6 +20,6 @@ public class Comment extends BaseModel {
     private Feed feed;
 
     @ManyToOne
-    @JoinColumn(name = "member_id", nullable = false)
-    private Member member;
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 }

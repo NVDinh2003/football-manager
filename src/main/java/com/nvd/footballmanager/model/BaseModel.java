@@ -32,4 +32,6 @@ public class BaseModel {
     @Column(nullable = false)
     @UpdateTimestamp
     private Instant updatedAt;
+
+    
 }

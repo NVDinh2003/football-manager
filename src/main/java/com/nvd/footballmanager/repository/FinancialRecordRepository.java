@@ -1,4 +1,11 @@
 package com.nvd.footballmanager.repository;
 
-public interface FinancialRecordRepository {
+import com.nvd.footballmanager.model.entity.FinancialRecord;
+import org.springframework.stereotype.Repository;
+
+import java.util.UUID;
+
+@Repository
+public interface FinancialRecordRepository extends BaseRepository<FinancialRecord, UUID> {
+    
 }

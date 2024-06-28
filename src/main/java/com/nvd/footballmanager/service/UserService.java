@@ -58,6 +58,7 @@ public class UserService extends BaseService<User, UserDTO, UUID> implements Use
         this.cloudinaryService = cloudinaryService;
     }
 
+    @Transactional
     public UserDTO registerUser(UserRegistration userRegistration) {
         User user = userMapper.convertForRegister(userRegistration);
         user.setPassword(passwordEncoder.encode(userRegistration.getPassword()));
@@ -95,7 +96,7 @@ public class UserService extends BaseService<User, UserDTO, UUID> implements Use
         return userMapper.convertToDTO(user);
     }
 
-
+    @Transactional
     public void generateEmailVerification(String username) {
         User user = userRepository.findByUsername(username).orElseThrow(UserDoesNotExistException::new);
         user.setVerificationCode(generateVerificationNumber());
@@ -114,6 +115,7 @@ public class UserService extends BaseService<User, UserDTO, UUID> implements Use
         return (long) Math.floor(Math.random() * 100_000_000);
     }
 
+    @Transactional
     public UserDTO verifyEmail(String username, Long code) {
         User user = userRepository.findByUsername(username).orElseThrow(UserDoesNotExistException::new);
 
@@ -177,16 +179,17 @@ public class UserService extends BaseService<User, UserDTO, UUID> implements Use
     }
 
     private void validatePhoneNumber(User existingUser, String phoneNumber) {
-        if (!existingUser.getPhoneNumber().equals(phoneNumber)) {
-            User userWithPhoneNumber = userRepository.findByPhoneNumber(phoneNumber);
-            if (userWithPhoneNumber != null) {
-                throw new BadRequestException(Constants.PHONE_NUMBER_IS_ALREADY_IN_USE);
-            }
-        }
+        Optional<User> userWithPhoneNumber = userRepository.findByPhoneNumber(phoneNumber);
+
+        if (existingUser.getPhoneNumber() == null && userWithPhoneNumber.isPresent())
+            throw new BadRequestException(Constants.PHONE_NUMBER_IS_ALREADY_IN_USE);
+        if (!existingUser.getPhoneNumber().equals(phoneNumber) && userWithPhoneNumber.isPresent())
+            throw new BadRequestException(Constants.PHONE_NUMBER_IS_ALREADY_IN_USE);
     }
 
 
     @Override
+    @Transactional
     public UserDTO update(UUID uuid, UserDTO request) {
         validateUserUpdate(uuid, request);
         return super.update(uuid, request);

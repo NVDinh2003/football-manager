@@ -16,14 +16,16 @@ import java.util.List;
 @Setter
 @Table(name = "feeds")
 public class Feed extends BaseModel {
+
+    private String title;
     @Column(columnDefinition = "TEXT")
     private String content;
 
     @ManyToOne
-    @JoinColumn(name = "member_id", nullable = false)
-    private Member member;
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
-    @OneToMany(mappedBy = "feed")
+    @OneToMany(mappedBy = "feed", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Comment> comments;
 
     @OneToOne(cascade = CascadeType.ALL)
