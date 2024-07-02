@@ -2,11 +2,6 @@ package com.nvd.footballmanager.mappers;
 
 import com.nvd.footballmanager.dto.MembershipRequestDTO;
 import com.nvd.footballmanager.model.entity.MembershipRequest;
-<<<<<<< Updated upstream
-
-public interface MembershipRequestMapper extends BaseMapper<MembershipRequest, MembershipRequestDTO> {
-}
-=======
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.NullValuePropertyMappingStrategy;
@@ -26,4 +21,3 @@ public interface MembershipRequestMapper extends BaseMapper<MembershipRequest, M
     MembershipRequest convertToEntity(MembershipRequestDTO dto);
 
 }
->>>>>>> Stashed changes

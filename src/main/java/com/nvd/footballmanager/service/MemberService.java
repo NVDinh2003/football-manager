@@ -1,9 +1,32 @@
 package com.nvd.footballmanager.service;
 
-public class MemberService {
-<<<<<<< Updated upstream
-=======
+import com.nvd.footballmanager.dto.MemberDTO;
+import com.nvd.footballmanager.dto.TeamDTO;
+import com.nvd.footballmanager.exceptions.AccessDeniedException;
+import com.nvd.footballmanager.mappers.MemberMapper;
+import com.nvd.footballmanager.mappers.TeamMapper;
+import com.nvd.footballmanager.model.entity.Member;
+import com.nvd.footballmanager.model.entity.MembershipRequest;
+import com.nvd.footballmanager.model.entity.Team;
+import com.nvd.footballmanager.model.entity.User;
+import com.nvd.footballmanager.model.enums.MemberRole;
+import com.nvd.footballmanager.repository.MemberRepository;
+import com.nvd.footballmanager.repository.MembershipRequestRepository;
+import com.nvd.footballmanager.repository.TeamRepository;
+import com.nvd.footballmanager.repository.UserRepository;
+import com.nvd.footballmanager.utils.Constants;
+import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+@Service
+@RequiredArgsConstructor
+public class MemberService {
     private final MemberRepository memberRepository;
     private final TeamRepository teamRepository;
     private final UserRepository userRepository;
@@ -25,7 +48,7 @@ public class MemberService {
         // chekc if user is already a member of team
         Optional<Member> existingMember = memberRepository.findByUserIdAndTeamId(userId, teamId);
         if (existingMember.isPresent()) {
-            throw new IllegalArgumentException(Constants.ALLREADY_MEMBER);
+            throw new IllegalArgumentException(Constants.ALREADY_MEMBER);
         }
 
         Member member = memberMapper.convertToEntity(memberDTO);
@@ -63,9 +86,8 @@ public class MemberService {
         UUID userId = member.getUser().getId();
 
         // xóa luôn MembershipRequest của user mới remove để test lại send request
-        MembershipRequest request = requestRepository.findByUserIdAndTeamId(userId, teamId)
-                .orElseThrow(() -> new EntityNotFoundException(Constants.ENTITY_NOT_FOUND));
-        requestRepository.delete(request);
+        Optional<MembershipRequest> request = requestRepository.findByUserIdAndTeamId(userId, teamId);
+        request.ifPresent(requestRepository::delete);
 
         memberRepository.delete(member);
 
@@ -105,6 +127,4 @@ public class MemberService {
         UUID currentUserId = userService.getCurrentUser().getId();
         return memberRepository.findByUserIdAndTeamId(currentUserId, teamId);
     }
-
->>>>>>> Stashed changes
 }

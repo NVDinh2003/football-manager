@@ -1,10 +1,24 @@
 package com.nvd.footballmanager.controller;
 
+import com.nvd.footballmanager.dto.AchievementDTO;
+import com.nvd.footballmanager.dto.CustomApiResponse;
+import com.nvd.footballmanager.dto.MemberDTO;
 import com.nvd.footballmanager.dto.TeamDTO;
+import com.nvd.footballmanager.dto.user.UserDTO;
+import com.nvd.footballmanager.exceptions.AccessDeniedException;
 import com.nvd.footballmanager.model.entity.Team;
+import com.nvd.footballmanager.service.AchievementService;
+import com.nvd.footballmanager.service.MemberService;
 import com.nvd.footballmanager.service.TeamService;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import com.nvd.footballmanager.service.UserService;
+import com.nvd.footballmanager.utils.Constants;
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.UUID;
 
@@ -13,14 +27,19 @@ import java.util.UUID;
 public class TeamController extends BaseController<Team, TeamDTO, UUID> {
 
     private final TeamService teamService;
+    private final UserService userService;
+    private final MemberService memberService;
+    private final AchievementService achievementService;
 
-    protected TeamController(TeamService teamService) {
+    protected TeamController(TeamService teamService, UserService userService,
+                             MemberService memberService, AchievementService achievementService) {
         super(teamService);
         this.teamService = teamService;
+        this.userService = userService;
+        this.memberService = memberService;
+        this.achievementService = achievementService;
     }
 
-<<<<<<< Updated upstream
-=======
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE) // kiểu 'multipart/form-data'
     public ResponseEntity<CustomApiResponse> create(@RequestPart("team") @Valid TeamDTO teamDTO,
                                                     @RequestPart(value = "logo", required = false) MultipartFile logo) {
@@ -106,6 +125,5 @@ public class TeamController extends BaseController<Team, TeamDTO, UUID> {
         AchievementDTO achievement = achievementService.update(achId, achievementDTO);
         return ResponseEntity.ok(CustomApiResponse.success(achievement));
     }
->>>>>>> Stashed changes
 
 }

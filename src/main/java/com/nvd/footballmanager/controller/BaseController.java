@@ -1,12 +1,7 @@
 package com.nvd.footballmanager.controller;
 
-import com.nvd.footballmanager.dto.BaseDTO;
 import com.nvd.footballmanager.dto.CustomApiResponse;
-<<<<<<< Updated upstream
-import com.nvd.footballmanager.model.BaseModel;
-=======
 import com.nvd.footballmanager.exceptions.AccessDeniedException;
->>>>>>> Stashed changes
 import com.nvd.footballmanager.service.BaseService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.MappedSuperclass;
@@ -19,11 +14,10 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
+
 @MappedSuperclass
 @Validated
-public abstract class BaseController<E extends BaseModel,
-        DTO extends BaseDTO<ID>,
-        ID extends UUID> {
+public abstract class BaseController<E, DTO, ID extends UUID> {
 
     private final BaseService<E, DTO, ID> baseService;
 

@@ -1,8 +1,5 @@
 package com.nvd.footballmanager.service;
 
-<<<<<<< Updated upstream
-public class MembershipRequestService {
-=======
 import com.nvd.footballmanager.dto.MembershipRequestDTO;
 import com.nvd.footballmanager.exceptions.AccessDeniedException;
 import com.nvd.footballmanager.mappers.MembershipRequestMapper;
@@ -122,5 +119,4 @@ public class MembershipRequestService {
         List<MembershipRequest> listReceivedRequests = membershipRepository.findAllByTeamId(teamId);
         return membershipRequestMapper.convertListToDTO(listReceivedRequests);
     }
->>>>>>> Stashed changes
 }

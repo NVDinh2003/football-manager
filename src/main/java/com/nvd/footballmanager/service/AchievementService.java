@@ -1,8 +1,5 @@
 package com.nvd.footballmanager.service;
 
-<<<<<<< Updated upstream
-public class AchievementService {
-=======
 import com.nvd.footballmanager.dto.AchievementDTO;
 import com.nvd.footballmanager.mappers.AchievementMapper;
 import com.nvd.footballmanager.model.entity.Achievement;
@@ -66,5 +63,5 @@ public class AchievementService extends BaseService<Achievement, AchievementDTO,
 //
 //        return achievementMapper.convertToDTO(updatedAch);
 //    }
->>>>>>> Stashed changes
+
 }

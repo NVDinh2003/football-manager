@@ -13,8 +13,10 @@ import com.nvd.footballmanager.service.auth.TokenService;
 import com.nvd.footballmanager.service.cloud.CloudinaryService;
 import com.nvd.footballmanager.utils.Constants;
 import com.nvd.footballmanager.utils.FileUploadUtil;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -230,15 +232,10 @@ public class UserService extends BaseService<User, UserDTO, UUID> implements Use
         return userMapper.convertToDTO(userRepository.save(currentUser));
     }
 
-    public UserDTO getCurrentUser(String token) {
-        String username = null;
+    public UserDTO getCurrentUser() {
         UserDTO user = null;
-
-        if (token != null && token.startsWith("Bearer ")) { // or token.substring(0, 6).equals("Bearer")
-            String strippedToken = token.substring(7);
-            username = tokenService.getUsernameFromToken(strippedToken);
-        }
-
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
         if (username != null) {
             try {
                 user = userMapper.convertToDTO(userRepository.findByUsername(username).orElse(null));
@@ -246,7 +243,6 @@ public class UserService extends BaseService<User, UserDTO, UUID> implements Use
                 user = null;
             }
         }
-
         return user;
     }
 }

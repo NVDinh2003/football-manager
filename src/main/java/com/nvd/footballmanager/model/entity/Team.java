@@ -35,6 +35,9 @@ public class Team extends BaseModel {
     private Set<Member> members;
 
     @OneToMany(mappedBy = "team", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Achievement> achievements;
+
+    @OneToMany(mappedBy = "team", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<MembershipRequest> membershipRequests;
 
 

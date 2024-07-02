@@ -1,9 +1,25 @@
 package com.nvd.footballmanager.controller;
 
-public class MembershipRequestController {
-<<<<<<< Updated upstream
-=======
+import com.nvd.footballmanager.dto.CustomApiResponse;
+import com.nvd.footballmanager.dto.MembershipRequestDTO;
+import com.nvd.footballmanager.exceptions.AccessDeniedException;
+import com.nvd.footballmanager.service.MemberService;
+import com.nvd.footballmanager.service.MembershipRequestService;
+import com.nvd.footballmanager.service.UserService;
+import com.nvd.footballmanager.utils.Constants;
+import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+import java.util.UUID;
+
+@RestController
+@RequestMapping("/api/membership-requests")
+@RequiredArgsConstructor
+public class MembershipRequestController {
     private final MembershipRequestService membershipRequestService;
     private final MemberService memberService;
     private final UserService userService;
@@ -27,7 +43,7 @@ public class MembershipRequestController {
             MembershipRequestDTO membershipRequest = membershipRequestService.sendMembershipRequest(userId, teamId);
             return ResponseEntity.ok(CustomApiResponse.created(membershipRequest));
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(CustomApiResponse.badRequest(e.getMessage()));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(CustomApiResponse.badRequest(e.getMessage()));
         }
 
     }
@@ -60,5 +76,4 @@ public class MembershipRequestController {
         List<MembershipRequestDTO> list = membershipRequestService.managerResponseRequest(membershipRequestId, status);
         return ResponseEntity.ok(CustomApiResponse.success(list));
     }
->>>>>>> Stashed changes
 }

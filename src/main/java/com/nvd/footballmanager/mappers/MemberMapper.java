@@ -1,11 +1,17 @@
 package com.nvd.footballmanager.mappers;
 
 import com.nvd.footballmanager.dto.MemberDTO;
+import com.nvd.footballmanager.dto.TeamDTO;
+import com.nvd.footballmanager.dto.user.UserDTO;
 import com.nvd.footballmanager.model.entity.Member;
+import com.nvd.footballmanager.model.entity.Team;
+import com.nvd.footballmanager.model.entity.User;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.Named;
+import org.mapstruct.NullValuePropertyMappingStrategy;
+import org.mapstruct.factory.Mappers;
 
-<<<<<<< Updated upstream
-public interface MemberMapper extends BaseMapper<Member, MemberDTO> {
-=======
 @Mapper(componentModel = "spring", uses = {UserMapper.class, TeamMapper.class, BaseMapper.class},
         nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
 public interface MemberMapper extends BaseMapper<Member, MemberDTO> {
@@ -26,6 +32,4 @@ public interface MemberMapper extends BaseMapper<Member, MemberDTO> {
         return TeamMapper.INSTANCE.convertToDTO(team);
     }
 
-
->>>>>>> Stashed changes
 }

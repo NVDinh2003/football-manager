@@ -1,11 +1,15 @@
 package com.nvd.footballmanager.mappers;
 
 import com.nvd.footballmanager.dto.AchievementDTO;
+import com.nvd.footballmanager.dto.TeamDTO;
 import com.nvd.footballmanager.model.entity.Achievement;
+import com.nvd.footballmanager.model.entity.Team;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.Named;
+import org.mapstruct.NullValuePropertyMappingStrategy;
+import org.mapstruct.factory.Mappers;
 
-<<<<<<< Updated upstream
-public interface AchievementMapper extends BaseMapper<Achievement, AchievementDTO> {
-=======
 @Mapper(componentModel = "spring", uses = {TeamMapper.class, BaseMapper.class},
         nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
 public interface AchievementMapper extends BaseMapper<Achievement, AchievementDTO> {
@@ -20,5 +24,4 @@ public interface AchievementMapper extends BaseMapper<Achievement, AchievementDT
         return TeamMapper.INSTANCE.convertToDTO(team);
     }
 
->>>>>>> Stashed changes
 }

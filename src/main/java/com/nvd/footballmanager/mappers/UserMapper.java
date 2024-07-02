@@ -25,12 +25,4 @@ public interface UserMapper extends BaseMapper<User, UserDTO> {
     UserDTO convertToDTO(User entity);
 
     User convertForRegister(UserRegistration userRegistration);
-<<<<<<< Updated upstream
-
-    @Override
-    default Optional<UserDTO> convertOptional(Optional<User> user) {
-        return user.map(e -> convertToDTO(e));
-    }
-=======
->>>>>>> Stashed changes
 }

@@ -42,3 +42,4 @@ public class MatchRequest {
     @OneToOne(mappedBy = "matchRequest")
     private Feed feed;
 }
+
