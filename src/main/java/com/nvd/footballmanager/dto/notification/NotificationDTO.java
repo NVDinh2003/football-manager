@@ -15,6 +15,6 @@ import java.util.UUID;
 public class NotificationDTO extends BaseDTO<UUID> {
     private String title;
     private String content;
-    private UUID senderId;
+    private String sender;
     private UUID teamId;
 }

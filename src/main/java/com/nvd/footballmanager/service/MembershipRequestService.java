@@ -1,8 +1,10 @@
 package com.nvd.footballmanager.service;
 
 import com.nvd.footballmanager.dto.MembershipRequestDTO;
+import com.nvd.footballmanager.dto.notification.NotiSendRequest;
 import com.nvd.footballmanager.exceptions.AccessDeniedException;
 import com.nvd.footballmanager.mappers.MembershipRequestMapper;
+import com.nvd.footballmanager.mappers.UserMapper;
 import com.nvd.footballmanager.model.entity.Member;
 import com.nvd.footballmanager.model.entity.MembershipRequest;
 import com.nvd.footballmanager.model.entity.Team;
@@ -33,6 +35,8 @@ public class MembershipRequestService {
     private final MembershipRequestMapper membershipRequestMapper;
     private final MemberService memberService;
     private final UserService userService;
+    private final UserMapper userMapper;
+    private final NotificationService notificationService;
 
     @Transactional
     public MembershipRequestDTO sendMembershipRequest(UUID userId, UUID teamId) {
@@ -52,6 +56,14 @@ public class MembershipRequestService {
                 .user(user)
                 .team(team)
                 .build();
+
+        // send noti to manager
+        NotiSendRequest noti = NotiSendRequest.builder()
+                .title(user.getUsername() + Constants.USER_SEND_MEMBERSHIP_REQUEST)
+                .content(userMapper.convertToDTO(user).toString()).build();
+
+        Member manager = memberRepository.findByRoleAndTeamId(MemberRole.MANAGER, teamId);
+        notificationService.sendNotiToManager(noti, manager);
 
         MembershipRequest saved = membershipRepository.save(membershipRequest);
         return membershipRequestMapper.convertToDTO(saved);
@@ -103,6 +115,9 @@ public class MembershipRequestService {
         membershipRequest.setStatus(newStatus);
         membershipRepository.save(membershipRequest);
 
+        // system send noti to user
+        NotiSendRequest noti = new NotiSendRequest();
+
         // if request is accepted, add user to team, default role is MEMBER
         if (newStatus == MembershipRequestStatus.ACCEPTED) {
             User user = membershipRequest.getUser();
@@ -114,7 +129,18 @@ public class MembershipRequestService {
             member.setRole(MemberRole.MEMBER);
 
             memberRepository.save(member);
+
+            // set notification
+            noti.setTitle("Your request to join team " + team.getName() + " has been accepted!");
+            noti.setContent("You are now a member of team " + team.getName());
+        } else {
+            // if request is rejected
+            noti.setTitle("Your request to join team " + membershipRequest.getTeam().getName() + " has been rejected!");
+            noti.setContent("Your request has been rejected by the team manager");
         }
+
+        notificationService.sendNotiToUser(noti, membershipRequest.getUser());
+
 
         List<MembershipRequest> listReceivedRequests = membershipRepository.findAllByTeamId(teamId);
         return membershipRequestMapper.convertListToDTO(listReceivedRequests);

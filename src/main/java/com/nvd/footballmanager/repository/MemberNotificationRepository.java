@@ -10,4 +10,6 @@ import java.util.UUID;
 @Repository
 public interface MemberNotificationRepository extends BaseRepository<MemberNotification, UUID> {
     List<MemberNotification> findByMemberAndNotificationIdIn(Member currentMember, List<UUID> notifyIds);
+
+    List<MemberNotification> findByMemberId(UUID memberId);
 }

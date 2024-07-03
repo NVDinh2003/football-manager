@@ -127,4 +127,5 @@ public class MemberService {
         UUID currentUserId = userService.getCurrentUser().getId();
         return memberRepository.findByUserIdAndTeamId(currentUserId, teamId);
     }
+
 }

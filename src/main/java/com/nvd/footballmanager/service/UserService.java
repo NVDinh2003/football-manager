@@ -9,7 +9,6 @@ import com.nvd.footballmanager.model.entity.User;
 import com.nvd.footballmanager.model.enums.UserRole;
 import com.nvd.footballmanager.repository.UserRepository;
 import com.nvd.footballmanager.service.auth.MailService;
-import com.nvd.footballmanager.service.auth.TokenService;
 import com.nvd.footballmanager.service.cloud.CloudinaryService;
 import com.nvd.footballmanager.utils.Constants;
 import com.nvd.footballmanager.utils.FileUploadUtil;
@@ -40,7 +39,6 @@ public class UserService extends BaseService<User, UserDTO, UUID> implements Use
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
     private final MailService mailService;
-    private final TokenService tokenService;
     private final CloudinaryService cloudinaryService;
 
 
@@ -48,7 +46,6 @@ public class UserService extends BaseService<User, UserDTO, UUID> implements Use
                           UserMapper userMapper,
                           PasswordEncoder passwordEncoder,
                           MailService mailService,
-                          TokenService tokenService,
                           CloudinaryService cloudinaryService
     ) {
         super(userRepository, userMapper);
@@ -56,7 +53,6 @@ public class UserService extends BaseService<User, UserDTO, UUID> implements Use
         this.userMapper = userMapper;
         this.passwordEncoder = passwordEncoder;
         this.mailService = mailService;
-        this.tokenService = tokenService;
         this.cloudinaryService = cloudinaryService;
     }
 

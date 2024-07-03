@@ -1,16 +1,16 @@
 package com.nvd.footballmanager.dto.notification;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.UUID;
 
 @Getter
 @Setter
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class NotiSendRequest {
-    @NotNull
     UUID teamId;
     @NotBlank
     private String title;

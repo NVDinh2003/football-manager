@@ -4,21 +4,16 @@ import com.nvd.footballmanager.dto.notification.NotiSendRequest;
 import com.nvd.footballmanager.dto.notification.NotificationDTO;
 import com.nvd.footballmanager.exceptions.AccessDeniedException;
 import com.nvd.footballmanager.mappers.NotificationMapper;
-import com.nvd.footballmanager.model.entity.Member;
-import com.nvd.footballmanager.model.entity.MemberNotification;
-import com.nvd.footballmanager.model.entity.Notification;
-import com.nvd.footballmanager.model.entity.Team;
+import com.nvd.footballmanager.model.entity.*;
 import com.nvd.footballmanager.model.enums.MemberRole;
-import com.nvd.footballmanager.repository.MemberNotificationRepository;
-import com.nvd.footballmanager.repository.MemberRepository;
-import com.nvd.footballmanager.repository.NotificationRepository;
-import com.nvd.footballmanager.repository.TeamRepository;
+import com.nvd.footballmanager.repository.*;
 import com.nvd.footballmanager.utils.Constants;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class NotificationService extends BaseService<Notification, NotificationDTO, UUID> {
@@ -29,21 +24,57 @@ public class NotificationService extends BaseService<Notification, NotificationD
     private final MemberRepository memberRepository;
     private final MemberNotificationRepository memberNotificationRepository;
     private final TeamRepository teamRepository;
+    private final UserRepository userRepository;
+    private final UserService userService;
 
     protected NotificationService(NotificationRepository notificationRepository,
                                   NotificationMapper notificationMapper,
                                   MemberService memberService,
                                   MemberNotificationRepository memberNotificationRepository,
                                   MemberRepository memberRepository,
-                                  TeamRepository teamRepository) {
+                                  TeamRepository teamRepository,
+                                  UserRepository userRepository,
+                                  UserService userService) {
         super(notificationRepository, notificationMapper);
         this.notificationRepository = notificationRepository;
         this.notificationMapper = notificationMapper;
         this.memberService = memberService;
         this.memberRepository = memberRepository;
         this.memberNotificationRepository = memberNotificationRepository;
-
         this.teamRepository = teamRepository;
+        this.userRepository = userRepository;
+        this.userService = userService;
+    }
+
+    @Transactional
+    public void sendNotiToUser(NotiSendRequest noti, User user) {
+        Notification notification = new Notification();
+        notification.setTitle(noti.getTitle());
+        notification.setContent(noti.getContent());
+        notification.setSender(Constants.SYSTEM);
+        notification.setUser(user);
+
+        notificationRepository.save(notification);
+    }
+
+    @Transactional
+    public void sendNotiToManager(NotiSendRequest noti, Member manager) {
+
+        Notification notification = new Notification();
+        notification.setTitle(noti.getTitle());
+        notification.setContent(noti.getContent());
+        notification.setSender(Constants.SYSTEM);
+
+        notification = notificationRepository.save(notification);
+
+        Set<MemberNotification> recipients = new HashSet<>();
+        MemberNotification memberNotification = MemberNotification.builder()
+                .member(manager)
+                .notification(notification).build();
+        recipients.add(memberNotificationRepository.save(memberNotification));
+
+        notification.setMemberRecipients(recipients);
+        notificationRepository.save(notification);
     }
 
     @Transactional
@@ -59,7 +90,7 @@ public class NotificationService extends BaseService<Notification, NotificationD
         Notification notification = new Notification();
         notification.setTitle(noti.getTitle());
         notification.setContent(noti.getContent());
-        notification.setSender(manager.get());
+        notification.setSender(manager.get().getUser().getName());
         notification.setTeam(team);
 
         notification = notificationRepository.save(notification);
@@ -77,7 +108,7 @@ public class NotificationService extends BaseService<Notification, NotificationD
             }
         }
 
-        notification.setRecipients(recipients);
+        notification.setMemberRecipients(recipients);
         notification = notificationRepository.save(notification);
         return notificationMapper.convertToDTO(notification);
     }
@@ -119,4 +150,26 @@ public class NotificationService extends BaseService<Notification, NotificationD
         memberNotificationRepository.saveAll(memberNotifications);
     }
 
+    public List<NotificationDTO> getNotificationsByMemberId(UUID memberId) {
+        memberRepository.findById(memberId)
+                .orElseThrow(() -> new EntityNotFoundException(Constants.ENTITY_NOT_FOUND));
+
+        List<MemberNotification> memberNotifications = memberNotificationRepository.findByMemberId(memberId);
+
+        List<Notification> notifications = memberNotifications.stream()
+                .map(MemberNotification::getNotification)
+                .collect(Collectors.toList());
+
+        return notificationMapper.convertListToDTO(notifications);
+    }
+
+    public List<NotificationDTO> getNotificationsByUser() {
+        UUID userId = userService.getCurrentUser().getId();
+        userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException(Constants.ENTITY_NOT_FOUND));
+
+        List<Notification> notifications = notificationRepository.findAllByUserId(userId);
+
+        return notificationMapper.convertListToDTO(notifications);
+    }
 }

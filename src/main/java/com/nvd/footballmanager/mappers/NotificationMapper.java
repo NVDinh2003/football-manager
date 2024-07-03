@@ -11,12 +11,10 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
 public interface NotificationMapper extends BaseMapper<Notification, NotificationDTO> {
 
     @Override
-    @Mapping(source = "sender.id", target = "senderId")
     @Mapping(target = "teamId", source = "team.id")
     NotificationDTO convertToDTO(Notification notification);
 
     @Override
-    @Mapping(source = "senderId", target = "sender.id")
     @Mapping(target = "team", ignore = true)
     Notification convertToEntity(NotificationDTO notificationDTO);
 

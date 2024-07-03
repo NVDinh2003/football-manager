@@ -7,7 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Set;
 
 @Entity
@@ -18,11 +18,11 @@ import java.util.Set;
 @Table(name = "matches")
 public class Match extends BaseModel {
 
-    @Column(name = "team1_scored")
+    @Column(name = "team1_scored", columnDefinition = "NOT NULL DEFAULT 0")
     private int team1Scored = 0;
-    @Column(name = "team2_scored")
+    @Column(name = "team2_scored", columnDefinition = "NOT NULL DEFAULT 0")
     private int team2Scored = 0;
-    private LocalDateTime time;
+    private Instant time;
     private String venue;
 
     @ManyToMany(mappedBy = "matches")

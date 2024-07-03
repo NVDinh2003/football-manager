@@ -4,13 +4,12 @@ import com.nvd.footballmanager.dto.AchievementDTO;
 import com.nvd.footballmanager.dto.CustomApiResponse;
 import com.nvd.footballmanager.dto.MemberDTO;
 import com.nvd.footballmanager.dto.TeamDTO;
-import com.nvd.footballmanager.dto.user.UserDTO;
 import com.nvd.footballmanager.exceptions.AccessDeniedException;
+import com.nvd.footballmanager.exceptions.BadRequestException;
 import com.nvd.footballmanager.model.entity.Team;
 import com.nvd.footballmanager.service.AchievementService;
 import com.nvd.footballmanager.service.MemberService;
 import com.nvd.footballmanager.service.TeamService;
-import com.nvd.footballmanager.service.UserService;
 import com.nvd.footballmanager.utils.Constants;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
@@ -27,15 +26,14 @@ import java.util.UUID;
 public class TeamController extends BaseController<Team, TeamDTO, UUID> {
 
     private final TeamService teamService;
-    private final UserService userService;
+
     private final MemberService memberService;
     private final AchievementService achievementService;
 
-    protected TeamController(TeamService teamService, UserService userService,
+    protected TeamController(TeamService teamService,
                              MemberService memberService, AchievementService achievementService) {
         super(teamService);
         this.teamService = teamService;
-        this.userService = userService;
         this.memberService = memberService;
         this.achievementService = achievementService;
     }
@@ -43,8 +41,7 @@ public class TeamController extends BaseController<Team, TeamDTO, UUID> {
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE) // kiểu 'multipart/form-data'
     public ResponseEntity<CustomApiResponse> create(@RequestPart("team") @Valid TeamDTO teamDTO,
                                                     @RequestPart(value = "logo", required = false) MultipartFile logo) {
-        UserDTO currentUser = userService.getCurrentUser();
-        TeamDTO createdTeam = teamService.create(teamDTO, logo, currentUser);
+        TeamDTO createdTeam = teamService.create(teamDTO, logo);
         return ResponseEntity.ok(CustomApiResponse.created(createdTeam));
     }
 
@@ -124,6 +121,11 @@ public class TeamController extends BaseController<Team, TeamDTO, UUID> {
                 .orElseThrow(() -> new EntityNotFoundException(Constants.ENTITY_NOT_FOUND));
         AchievementDTO achievement = achievementService.update(achId, achievementDTO);
         return ResponseEntity.ok(CustomApiResponse.success(achievement));
+    }
+
+    @ExceptionHandler({BadRequestException.class})
+    public ResponseEntity<CustomApiResponse> handleCreateTeam(BadRequestException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(CustomApiResponse.badRequest(ex.getMessage()));
     }
 
 }

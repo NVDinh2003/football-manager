@@ -12,6 +12,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.UUID;
 
@@ -37,4 +38,14 @@ public class UserDTO extends BaseDTO<UUID> {
     private String avatar;
     private Boolean enabled;
     private UserRole role;
+
+    @Override
+    public String toString() {
+        return String.format("User: %s (Username: %s)\nEmail: %s\nPhone: %s\nDate of Birth: %s",
+                name,
+                username,
+                email,
+                phoneNumber != null ? phoneNumber : "Not provided",
+                dob != null ? new SimpleDateFormat("dd/MM/yyyy").format(dob) : "Not provided");
+    }
 }

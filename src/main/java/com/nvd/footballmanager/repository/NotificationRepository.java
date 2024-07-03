@@ -9,4 +9,6 @@ import java.util.UUID;
 @Repository
 public interface NotificationRepository extends BaseRepository<Notification, UUID> {
     List<Notification> findByTeamId(UUID teamId);
+
+    List<Notification> findAllByUserId(UUID userId);
 }

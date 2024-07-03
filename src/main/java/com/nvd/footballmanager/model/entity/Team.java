@@ -20,7 +20,7 @@ public class Team extends BaseModel {
     private String name;
     private String logo;
     private String address;
-    //    @Column(name = "rank_points", columnDefinition = "int default 0")
+    @Column(columnDefinition = "int default 0")
     private int rankPoints = 0;
 
     //  TEAM - MATCH
@@ -30,7 +30,6 @@ public class Team extends BaseModel {
     @OneToMany(mappedBy = "team2", fetch = FetchType.LAZY)
     private Set<Match> team2;
 
-
     @OneToMany(mappedBy = "team", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Member> members;
 
@@ -39,6 +38,5 @@ public class Team extends BaseModel {
 
     @OneToMany(mappedBy = "team", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<MembershipRequest> membershipRequests;
-
 
 }

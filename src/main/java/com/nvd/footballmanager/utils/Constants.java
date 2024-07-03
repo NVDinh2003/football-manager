@@ -20,6 +20,9 @@ public class Constants {
     public static final String HEADER_STRING = "Authorization";
     public static final String NOT_ACCEPTED = "NOT_ACCEPTED";
     public static final String OBJECT_ALREADY_EXISTS = "OBJECT_ALREADY_EXISTS";
-    public static final String ENTITY_NOT_FOUND = "ENTITY_NOT_FOUND brủh";
+    public static final String ENTITY_NOT_FOUND = "Entity not found brủh!";
     public static final String ALREADY_MEMBER = "User is already a member of the team";
+    public static final String ALREADY_MANAGER_OF_TEAM = "You are currently a manager of a team, you cannot create a new team!";
+    public static final String USER_SEND_MEMBERSHIP_REQUEST = " xin gia nhập đội bóng của bạn";
+    public static final String SYSTEM = "System";
 }

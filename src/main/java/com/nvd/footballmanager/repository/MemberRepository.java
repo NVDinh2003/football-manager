@@ -19,4 +19,5 @@ public interface MemberRepository extends BaseRepository<Member, UUID> {
 
     Member findByRoleAndTeamId(MemberRole memberRole, UUID teamId);
 
+    Optional<Member> findByRoleAndUserId(MemberRole memberRole, UUID userId);
 }

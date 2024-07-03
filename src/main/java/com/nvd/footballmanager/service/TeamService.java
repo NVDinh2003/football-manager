@@ -2,15 +2,17 @@ package com.nvd.footballmanager.service;
 
 import com.nvd.footballmanager.dto.TeamDTO;
 import com.nvd.footballmanager.dto.response.CloudinaryResponse;
-import com.nvd.footballmanager.dto.user.UserDTO;
+import com.nvd.footballmanager.exceptions.BadRequestException;
 import com.nvd.footballmanager.mappers.TeamMapper;
-import com.nvd.footballmanager.mappers.UserMapper;
 import com.nvd.footballmanager.model.entity.Member;
 import com.nvd.footballmanager.model.entity.Team;
+import com.nvd.footballmanager.model.entity.User;
 import com.nvd.footballmanager.model.enums.MemberRole;
 import com.nvd.footballmanager.repository.MemberRepository;
 import com.nvd.footballmanager.repository.TeamRepository;
+import com.nvd.footballmanager.repository.UserRepository;
 import com.nvd.footballmanager.service.cloud.CloudinaryService;
+import com.nvd.footballmanager.utils.Constants;
 import com.nvd.footballmanager.utils.FileUploadUtil;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
@@ -25,45 +27,50 @@ public class TeamService extends BaseService<Team, TeamDTO, UUID> {
     private final TeamRepository teamRepository;
     private final MemberRepository memberRepository;
     private final TeamMapper teamMapper;
-    private final UserMapper userMapper;
     private final CloudinaryService cloudinaryService;
+    private final UserService userService;
+    private final UserRepository userRepository;
 
 
     protected TeamService(TeamRepository teamRepository,
                           MemberRepository memberRepository, TeamMapper teamMapper,
-                          UserMapper userMapper,
-                          CloudinaryService cloudinaryService) {
+                          CloudinaryService cloudinaryService,
+                          UserService userService,
+                          UserRepository userRepository) {
         super(teamRepository, teamMapper);
         this.teamRepository = teamRepository;
         this.teamMapper = teamMapper;
         this.memberRepository = memberRepository;
-        this.userMapper = userMapper;
         this.cloudinaryService = cloudinaryService;
+        this.userService = userService;
+        this.userRepository = userRepository;
     }
 
     @Transactional
-    public TeamDTO create(TeamDTO dto, MultipartFile logo, UserDTO current) {
+    public TeamDTO create(TeamDTO dto, MultipartFile logo) {
+        UUID currentUserId = userService.getCurrentUser().getId();
+        User user = userRepository.findById(currentUserId)
+                .orElseThrow(() -> new EntityNotFoundException(Constants.ENTITY_NOT_FOUND));
 
-        TeamDTO teamDTO = null;
-        if (current != null) {
-            if (logo != null) {
-                FileUploadUtil.assertAllowed(logo, FileUploadUtil.IMAGE_PATTERN);
-                final String fileName = FileUploadUtil.getFileName(logo.getOriginalFilename());
-                final CloudinaryResponse response = cloudinaryService.uploadImage(logo, "team/logo/" + fileName);
-                dto.setLogo(response.getUrl());
-            }
+        memberRepository.findByRoleAndUserId(MemberRole.MANAGER, currentUserId)
+                .orElseThrow(() -> new BadRequestException(Constants.ALREADY_MANAGER_OF_TEAM));
 
-            Team savedTeam = teamRepository.save(teamMapper.convertToEntity(dto));
-            // Create a new member entity with role MANAGER (cuz this user created this team)
-            Member manager = new Member();
-            manager.setUser(userMapper.convertToEntity(current));
-            manager.setTeam(savedTeam);
-            manager.setRole(MemberRole.MANAGER);
-            memberRepository.save(manager);
-
-            teamDTO = teamMapper.convertToDTO(savedTeam);
+        if (logo != null) {
+            FileUploadUtil.assertAllowed(logo, FileUploadUtil.IMAGE_PATTERN);
+            final String fileName = FileUploadUtil.getFileName(logo.getOriginalFilename());
+            final CloudinaryResponse response = cloudinaryService.uploadImage(logo, "team/logo/" + fileName);
+            dto.setLogo(response.getUrl());
         }
-        return teamDTO;
+
+        Team savedTeam = teamRepository.save(teamMapper.convertToEntity(dto));
+        // Create a new member entity with role MANAGER (cuz this user created this team)
+        Member manager = new Member();
+        manager.setUser(user);
+        manager.setTeam(savedTeam);
+        manager.setRole(MemberRole.MANAGER);
+        memberRepository.save(manager);
+
+        return teamMapper.convertToDTO(savedTeam);
     }
 
     @Transactional

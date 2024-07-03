@@ -49,6 +49,15 @@ public class NotificationController extends BaseController<Notification, Notific
         return ResponseEntity.ok(CustomApiResponse.success("Notification status updated to 'READ'"));
     }
 
+    @GetMapping("/member/{memberId}")
+    public ResponseEntity<CustomApiResponse> getNotificationsByMemberId(@PathVariable UUID memberId) {
+        return ResponseEntity.ok(CustomApiResponse.success(notificationService.getNotificationsByMemberId(memberId)));
+    }
+
+    @GetMapping("/user")
+    public ResponseEntity<CustomApiResponse> getNotificationsByUserId() {
+        return ResponseEntity.ok(CustomApiResponse.success(notificationService.getNotificationsByUser()));
+    }
 
     @ExceptionHandler({BadRequestException.class})
     public ResponseEntity<CustomApiResponse> handleBadRequest(BadRequestException ex) {
