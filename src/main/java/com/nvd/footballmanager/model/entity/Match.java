@@ -18,12 +18,14 @@ import java.util.Set;
 @Table(name = "matches")
 public class Match extends BaseModel {
 
-    @Column(name = "team1_scored", columnDefinition = "NOT NULL DEFAULT 0")
+    @Column(name = "team1_scored", columnDefinition = "int NOT NULL DEFAULT 0")
     private int team1Scored = 0;
-    @Column(name = "team2_scored", columnDefinition = "NOT NULL DEFAULT 0")
+    @Column(name = "team2_scored", columnDefinition = "int NOT NULL DEFAULT 0")
     private int team2Scored = 0;
     private Instant time;
     private String venue;
+    @Column(columnDefinition = "boolean default false")
+    private boolean confirmed;
 
     @ManyToMany(mappedBy = "matches")
     Set<Member> members;
@@ -35,4 +37,5 @@ public class Match extends BaseModel {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "team2_id", referencedColumnName = "id")
     private Team team2;
+    
 }

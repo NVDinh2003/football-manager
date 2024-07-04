@@ -24,10 +24,10 @@ public class Team extends BaseModel {
     private int rankPoints = 0;
 
     //  TEAM - MATCH
-    @OneToMany(mappedBy = "team1", fetch = FetchType.LAZY) // chỉ tải khi được truy cập
+    @OneToMany(mappedBy = "team1", fetch = FetchType.LAZY, orphanRemoval = true) // chỉ tải khi được truy cập
     private Set<Match> team1;
 
-    @OneToMany(mappedBy = "team2", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "team2", fetch = FetchType.LAZY, orphanRemoval = true)
     private Set<Match> team2;
 
     @OneToMany(mappedBy = "team", cascade = CascadeType.ALL, orphanRemoval = true)

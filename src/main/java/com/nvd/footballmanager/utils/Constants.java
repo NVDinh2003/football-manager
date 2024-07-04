@@ -25,4 +25,5 @@ public class Constants {
     public static final String ALREADY_MANAGER_OF_TEAM = "You are currently a manager of a team, you cannot create a new team!";
     public static final String USER_SEND_MEMBERSHIP_REQUEST = " xin gia nhập đội bóng của bạn";
     public static final String SYSTEM = "System";
+    public static final String MATCH_ALREADY_COMFIRMED = "Match result has been confirmed.";
 }

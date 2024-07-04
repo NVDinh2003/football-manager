@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -52,8 +53,10 @@ public class TeamService extends BaseService<Team, TeamDTO, UUID> {
         User user = userRepository.findById(currentUserId)
                 .orElseThrow(() -> new EntityNotFoundException(Constants.ENTITY_NOT_FOUND));
 
-        memberRepository.findByRoleAndUserId(MemberRole.MANAGER, currentUserId)
-                .orElseThrow(() -> new BadRequestException(Constants.ALREADY_MANAGER_OF_TEAM));
+        Optional<Member> member = memberRepository.findByRoleAndUserId(MemberRole.MANAGER, currentUserId);
+        if (member.isPresent()) {
+            throw new BadRequestException(Constants.ALREADY_MANAGER_OF_TEAM);
+        }
 
         if (logo != null) {
             FileUploadUtil.assertAllowed(logo, FileUploadUtil.IMAGE_PATTERN);

@@ -36,18 +36,12 @@ public class UserController
         super(userService);
         this.userService = userService;
     }
-    
+
     @ExceptionHandler({BadRequestException.class})
     public ResponseEntity<CustomApiResponse> handleBadRequest(BadRequestException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(CustomApiResponse
                 .badRequest(ex.getMessage()));
     }
-
-//    @GetMapping("/me")// User Details
-//    public CustomApiResponse getCurrentUser(Authentication authentication) {
-//        UserDTO user = userService.getUserByUsername(authentication.getName());
-//        return CustomApiResponse.success(user);
-//    }
 
     @GetMapping("/me")
     public CustomApiResponse getCurrentUser() {
