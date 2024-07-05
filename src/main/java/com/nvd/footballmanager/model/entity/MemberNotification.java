@@ -3,6 +3,8 @@ package com.nvd.footballmanager.model.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.type.SqlTypes;
 
 import java.util.UUID;
@@ -31,6 +33,7 @@ public class MemberNotification {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "notification_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Notification notification;
 
 }

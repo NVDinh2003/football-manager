@@ -3,6 +3,8 @@ package com.nvd.footballmanager.model.entity;
 import com.nvd.footballmanager.model.BaseModel;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.util.Set;
 
@@ -25,10 +27,11 @@ public class Notification extends BaseModel {
     private String sender;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "team_id", nullable = true)
+    @JoinColumn(name = "team_id")
     private Team team;
 
     @OneToMany(mappedBy = "notification", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Set<MemberNotification> memberRecipients;
 
     @ManyToOne

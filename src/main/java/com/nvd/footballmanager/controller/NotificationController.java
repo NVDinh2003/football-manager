@@ -59,6 +59,12 @@ public class NotificationController extends BaseController<Notification, Notific
         return ResponseEntity.ok(CustomApiResponse.success(notificationService.getNotificationsByUser()));
     }
 
+    @DeleteMapping("/member/{memberId}")
+    public ResponseEntity<CustomApiResponse> deleteAllNotificationsByMemberId(@PathVariable UUID memberId) {
+        notificationService.deleteNotificationsByMemberId(memberId);
+        return ResponseEntity.ok(CustomApiResponse.success("All notifications deleted"));
+    }
+
     @ExceptionHandler({BadRequestException.class})
     public ResponseEntity<CustomApiResponse> handleBadRequest(BadRequestException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(CustomApiResponse

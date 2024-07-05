@@ -99,8 +99,9 @@ public class MatchService extends BaseService<Match, MatchDTO, UUID> {
         notiToTeamMembers.setTeamId(manager.get().getTeam().getId());
         notiToTeamMembers.setTitle("Manager updated match information.");
         StringBuilder content = new StringBuilder("Match has been updated between teams: " +
-                manager.get().getTeam().getName() + " and " + team2.getName() + " at " + dto.getVenue()
-                + " on " + dto.getTime());
+                manager.get().getTeam().getName() + " and " + team2.getName() + " at ")
+                .append(dto.getVenue() != null ? dto.getVenue() : match.getVenue())
+                .append(" on ").append(dto.getTime() != null ? dto.getTime() : match.getTime());
 
         Instant now = Instant.now();  // check if match has ended, update result
         if (now.isAfter(match.getTime())) {

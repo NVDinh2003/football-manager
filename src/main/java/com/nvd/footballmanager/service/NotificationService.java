@@ -116,7 +116,7 @@ public class NotificationService extends BaseService<Notification, NotificationD
     public List<NotificationDTO> getNotificationsByTeamId(UUID teamId) {
         if (memberService.currentUserMemberInTeam(teamId).isEmpty())
             throw new AccessDeniedException(Constants.ACCESS_DENIED);
-        return notificationMapper.convertListToDTO(notificationRepository.findByTeamId(teamId));
+        return notificationMapper.convertListToDTO(notificationRepository.findByTeamIdOrderByCreatedAtDesc(teamId));
     }
 
     @Override
@@ -171,5 +171,21 @@ public class NotificationService extends BaseService<Notification, NotificationD
         List<Notification> notifications = notificationRepository.findAllByUserId(userId);
 
         return notificationMapper.convertListToDTO(notifications);
+    }
+
+    public void deleteNotificationsByMemberId(UUID memberId) {
+
+        Optional<Member> member = memberRepository.findByIdAndUserId(memberId, userService.getCurrentUser().getId());
+        if (member.isEmpty())
+            throw new AccessDeniedException(Constants.ACCESS_DENIED);
+
+
+        List<MemberNotification> memberNotifications = memberNotificationRepository.findByMemberId(memberId);
+
+        List<Notification> notifications = memberNotifications.stream()
+                .map(MemberNotification::getNotification)
+                .toList();
+        memberNotificationRepository.deleteAll(memberNotifications);
+        notificationRepository.deleteAll(notifications);
     }
 }
