@@ -3,12 +3,14 @@ package com.nvd.footballmanager.service;
 import com.nvd.footballmanager.dto.notification.NotiSendRequest;
 import com.nvd.footballmanager.dto.notification.NotificationDTO;
 import com.nvd.footballmanager.exceptions.AccessDeniedException;
+import com.nvd.footballmanager.filters.NotificationFilter;
 import com.nvd.footballmanager.mappers.NotificationMapper;
 import com.nvd.footballmanager.model.entity.*;
 import com.nvd.footballmanager.model.enums.MemberRole;
 import com.nvd.footballmanager.repository.*;
 import com.nvd.footballmanager.utils.Constants;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,7 +18,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
-public class NotificationService extends BaseService<Notification, NotificationDTO, UUID> {
+public class NotificationService extends BaseService<Notification, NotificationDTO, NotificationFilter, UUID> {
 
     private final NotificationRepository notificationRepository;
     private final NotificationMapper notificationMapper;
@@ -47,7 +49,7 @@ public class NotificationService extends BaseService<Notification, NotificationD
     }
 
     @Transactional
-    public void sendNotiToUser(NotiSendRequest noti, User user) {
+    public void sendNotiToUser(NotiSendRequest noti, User user) { //system send notification to user
         Notification notification = new Notification();
         notification.setTitle(noti.getTitle());
         notification.setContent(noti.getContent());
@@ -58,7 +60,7 @@ public class NotificationService extends BaseService<Notification, NotificationD
     }
 
     @Transactional
-    public void sendNotiToManager(NotiSendRequest noti, Member manager) {
+    public void sendNotiToManager(NotiSendRequest noti, Member manager) { // system send notification to manager
 
         Notification notification = new Notification();
         notification.setTitle(noti.getTitle());
@@ -99,7 +101,7 @@ public class NotificationService extends BaseService<Notification, NotificationD
 
         Set<MemberNotification> recipients = new HashSet<>();
         for (Member member : teamMembers) {
-            if (!member.equals(manager)) {  // -manager
+            if (!member.equals(manager)) {  //- manager not receive this noti
                 MemberNotification memberNotification = new MemberNotification();
                 memberNotification.setMember(member);
                 memberNotification.setNotification(notification);
@@ -113,10 +115,12 @@ public class NotificationService extends BaseService<Notification, NotificationD
         return notificationMapper.convertToDTO(notification);
     }
 
-    public List<NotificationDTO> getNotificationsByTeamId(UUID teamId) {
-        if (memberService.currentUserMemberInTeam(teamId).isEmpty())
+    public Page<NotificationDTO> getNotificationsByTeam(NotificationFilter filter) {
+        if (memberService.currentUserMemberInTeam(filter.getTeamId()).isEmpty())
             throw new AccessDeniedException(Constants.ACCESS_DENIED);
-        return notificationMapper.convertListToDTO(notificationRepository.findByTeamIdOrderByCreatedAtDesc(teamId));
+        filter.setPageSize(Constants.NOTI_PAGE_SIZE);  // get 20 noti newest
+        filter.setSortBy("createdAt");
+        return super.findAll(filter);
     }
 
     @Override
@@ -163,16 +167,19 @@ public class NotificationService extends BaseService<Notification, NotificationD
         return notificationMapper.convertListToDTO(notifications);
     }
 
-    public List<NotificationDTO> getNotificationsByUser() {
+    public Page<NotificationDTO> getNotificationsByUser(NotificationFilter filter) {
         UUID userId = userService.getCurrentUser().getId();
         userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException(Constants.ENTITY_NOT_FOUND));
 
-        List<Notification> notifications = notificationRepository.findAllByUserId(userId);
+        filter.setUserId(userId);
+        filter.setPageSize(Constants.NOTI_PAGE_SIZE);  // 20 noti newest
+        filter.setSortBy("createdAt");
 
-        return notificationMapper.convertListToDTO(notifications);
+        return super.findAll(filter);
     }
 
+    @Transactional
     public void deleteNotificationsByMemberId(UUID memberId) {
 
         Optional<Member> member = memberRepository.findByIdAndUserId(memberId, userService.getCurrentUser().getId());

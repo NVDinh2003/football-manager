@@ -3,6 +3,7 @@ package com.nvd.footballmanager.controller;
 import com.nvd.footballmanager.dto.CustomApiResponse;
 import com.nvd.footballmanager.dto.MembershipRequestDTO;
 import com.nvd.footballmanager.exceptions.AccessDeniedException;
+import com.nvd.footballmanager.exceptions.BadRequestException;
 import com.nvd.footballmanager.service.MemberService;
 import com.nvd.footballmanager.service.MembershipRequestService;
 import com.nvd.footballmanager.service.UserService;
@@ -36,11 +37,15 @@ public class MembershipRequestController {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(CustomApiResponse.forbidden(ex.getMessage()));
     }
 
+    @ExceptionHandler({BadRequestException.class})
+    public ResponseEntity<CustomApiResponse> handleBadRequest(BadRequestException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(CustomApiResponse.badRequest(ex.getMessage()));
+    }
+
     @PostMapping("/{teamId}")
     public ResponseEntity<CustomApiResponse> sendMembershipRequest(@PathVariable("teamId") UUID teamId) {
         try {
-            UUID userId = userService.getCurrentUser().getId();
-            MembershipRequestDTO membershipRequest = membershipRequestService.sendMembershipRequest(userId, teamId);
+            MembershipRequestDTO membershipRequest = membershipRequestService.sendMembershipRequest(teamId);
             return ResponseEntity.ok(CustomApiResponse.created(membershipRequest));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(CustomApiResponse.badRequest(e.getMessage()));
@@ -57,15 +62,15 @@ public class MembershipRequestController {
 
     @GetMapping("/team/{teamId}")
     public ResponseEntity<CustomApiResponse> managerViewAllReceived(@PathVariable("teamId") UUID teamId) {
-        if (memberService.isNotManagerPermission(teamId)) {
+        if (memberService.isCurrentUserNotManagerPermissionOfTeam(teamId)) {
             throw new AccessDeniedException(Constants.NOT_MANAGER_PERMISSION);
         }
         List<MembershipRequestDTO> list = membershipRequestService.managerViewAllReceived(teamId);
         return ResponseEntity.ok(CustomApiResponse.success(list));
     }
 
-    @DeleteMapping("/cancel/{Id}")
-    public ResponseEntity<CustomApiResponse> userCancelRequest(@PathVariable("Id") UUID membershipRequestId) {
+    @DeleteMapping("/cancel/{id}")
+    public ResponseEntity<CustomApiResponse> userCancelRequest(@PathVariable("id") UUID membershipRequestId) {
         List<MembershipRequestDTO> list = membershipRequestService.userCancelRequest(membershipRequestId);
         return ResponseEntity.ok(CustomApiResponse.success(list));
     }

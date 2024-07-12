@@ -2,6 +2,7 @@ package com.nvd.footballmanager.service;
 
 import com.nvd.footballmanager.dto.EquipmentDTO;
 import com.nvd.footballmanager.exceptions.AccessDeniedException;
+import com.nvd.footballmanager.filters.EquipmentFilter;
 import com.nvd.footballmanager.mappers.EquipmentMapper;
 import com.nvd.footballmanager.model.entity.Equipment;
 import com.nvd.footballmanager.model.entity.Team;
@@ -9,12 +10,13 @@ import com.nvd.footballmanager.repository.EquipmentRepository;
 import com.nvd.footballmanager.repository.TeamRepository;
 import com.nvd.footballmanager.utils.Constants;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
 
 @Service
-public class EquipmentService extends BaseService<Equipment, EquipmentDTO, UUID> {
+public class EquipmentService extends BaseService<Equipment, EquipmentDTO, EquipmentFilter, UUID> {
     private final EquipmentRepository equipmentRepository;
     private final EquipmentMapper equipmentMapper;
     private final MemberService memberService;
@@ -34,7 +36,7 @@ public class EquipmentService extends BaseService<Equipment, EquipmentDTO, UUID>
 
     @Override
     public EquipmentDTO create(EquipmentDTO equipmentDTO) {
-        if (memberService.isNotManagerPermission(equipmentDTO.getTeamId()))
+        if (memberService.isCurrentUserNotManagerPermissionOfTeam(equipmentDTO.getTeamId()))
             throw new AccessDeniedException(Constants.NOT_MANAGER_PERMISSION);
 
 
@@ -50,7 +52,7 @@ public class EquipmentService extends BaseService<Equipment, EquipmentDTO, UUID>
 
     @Override
     public EquipmentDTO update(UUID uuid, EquipmentDTO equipmentDTO) {
-        if (memberService.isNotManagerPermission(equipmentDTO.getTeamId()))
+        if (memberService.isCurrentUserNotManagerPermissionOfTeam(equipmentDTO.getTeamId()))
             throw new AccessDeniedException(Constants.NOT_MANAGER_PERMISSION);
 
         return super.update(uuid, equipmentDTO);
@@ -60,8 +62,17 @@ public class EquipmentService extends BaseService<Equipment, EquipmentDTO, UUID>
     public void deleteById(UUID uuid) {
         Equipment equipment = equipmentRepository.findById(uuid)
                 .orElseThrow(() -> new EntityNotFoundException(Constants.ENTITY_NOT_FOUND));
-        if (memberService.isNotManagerPermission(equipment.getTeam().getId()))
+        if (memberService.isCurrentUserNotManagerPermissionOfTeam(equipment.getTeam().getId()))
             throw new AccessDeniedException(Constants.NOT_MANAGER_PERMISSION);
         super.deleteById(uuid);
+    }
+
+    public Page<EquipmentDTO> findAllByTeam(EquipmentFilter filter) {
+        teamRepository.findById(filter.getTeamId())
+                .orElseThrow(() -> new EntityNotFoundException(Constants.ENTITY_NOT_FOUND));
+
+        Page<Equipment> list = equipmentRepository.findAllWithFilter(filter.getPageable(), filter);
+        return equipmentMapper.convertPageToDTO(list);
+
     }
 }

@@ -1,8 +1,7 @@
-package com.nvd.footballmanager.dto;
+package com.nvd.footballmanager.filters;
 
 import com.nvd.footballmanager.model.enums.MatchRequestStatus;
 import com.nvd.footballmanager.model.enums.MatchType;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,20 +10,19 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-@AllArgsConstructor
-@NoArgsConstructor
 @Getter
 @Setter
-public class MatchRequestDTO {
-    private UUID id;
-    private LocalDateTime time;
+@NoArgsConstructor
+@AllArgsConstructor
+public class MatchRequestFilter extends BaseFilter {
+    private LocalDateTime fromDate;
+    private LocalDateTime toDate;
     private String venue;
     private String locationDetails;
     private MatchType matchType;
-    private String note;
+    //    private String note;
     private MatchRequestStatus status;
-    @NotNull
     private UUID teamId;
-
-//    private Feed feed;
+    private int rankPoints;
+    private int rankPointRange;
 }

@@ -36,10 +36,14 @@ public class MatchRequest {
     @Column(columnDefinition = "TEXT")
     private String note;
     @Enumerated(EnumType.STRING)
-    @Column(length = 5, nullable = false, columnDefinition = "enum('NEW','DONE') DEFAULT 'NEW'")
-    private MatchRequestStatus status;
+    @Column(length = 5, nullable = false, columnDefinition = "enum('NEW','DONE') NOT NULL DEFAULT 'NEW'")
+    private MatchRequestStatus status = MatchRequestStatus.NEW;
 
     @OneToOne(mappedBy = "matchRequest")
     private Feed feed;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "team_id")
+    private Team team;
 }
 

@@ -1,30 +1,36 @@
 package com.nvd.footballmanager.service;
 
+import com.nvd.footballmanager.filters.BaseFilter;
 import com.nvd.footballmanager.mappers.BaseMapper;
 import com.nvd.footballmanager.repository.BaseRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.MappedSuperclass;
 import jakarta.transaction.Transactional;
+import org.springframework.data.domain.Page;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 @MappedSuperclass
-public abstract class BaseService<E, DTO, ID extends UUID> {
+public abstract class BaseService<E, DTO,
+        FT extends BaseFilter,
+        ID extends UUID> {
 
-
-    private final BaseRepository<E, ID> baseRepository;
+    private final BaseRepository<E, FT, ID> baseRepository;
     private final BaseMapper<E, DTO> baseMapper;
 
 
-    protected BaseService(BaseRepository<E, ID> baseRepository, BaseMapper<E, DTO> baseMapper) {
+    protected BaseService(BaseRepository<E, FT, ID> baseRepository, BaseMapper<E, DTO> baseMapper) {
         this.baseRepository = baseRepository;
         this.baseMapper = baseMapper;
     }
 
-    public List<DTO> findAll() {
-        return baseMapper.convertListToDTO(baseRepository.findAll());
+//    public List<DTO> findAll() {
+//        return baseMapper.convertListToDTO(baseRepository.findAll());
+//    }
+
+    public Page<DTO> findAll(FT filter) {
+        return baseMapper.convertPageToDTO(baseRepository.findAllWithFilter(filter.getPageable(), filter));
     }
 
     public Optional<DTO> findById(ID id) {

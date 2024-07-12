@@ -2,6 +2,8 @@ package com.nvd.footballmanager.controller;
 
 import com.nvd.footballmanager.dto.CustomApiResponse;
 import com.nvd.footballmanager.dto.FeedDTO;
+import com.nvd.footballmanager.filters.CommentFilter;
+import com.nvd.footballmanager.filters.FeedFilter;
 import com.nvd.footballmanager.model.entity.Feed;
 import com.nvd.footballmanager.service.FeedService;
 import org.springframework.http.ResponseEntity;
@@ -12,7 +14,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/feeds")
-public class FeedController extends BaseController<Feed, FeedDTO, UUID> {
+public class FeedController extends BaseController<Feed, FeedDTO, FeedFilter, UUID> {
 
     private final FeedService feedService;
 
@@ -20,6 +22,22 @@ public class FeedController extends BaseController<Feed, FeedDTO, UUID> {
     protected FeedController(FeedService feedService) {
         super(feedService);
         this.feedService = feedService;
+    }
+
+    @GetMapping("/u/{userId}")
+    public ResponseEntity<CustomApiResponse> findAllByUserId(
+            @ModelAttribute FeedFilter filter,
+            @PathVariable("userId") UUID userId) {
+        filter.setUserId(userId);
+        return ResponseEntity.ok(CustomApiResponse.success(feedService.findAllByUser(filter)));
+    }
+
+    @GetMapping("{id}/comments")
+    public ResponseEntity<CustomApiResponse> getAllCommentsInFeed(
+            @ModelAttribute CommentFilter filter,
+            @PathVariable("id") UUID id) {
+        filter.setFeedId(id);
+        return ResponseEntity.ok(CustomApiResponse.success(feedService.findAllCommentsInFeed(filter)));
     }
 
     @PostMapping("/{id}/comments")

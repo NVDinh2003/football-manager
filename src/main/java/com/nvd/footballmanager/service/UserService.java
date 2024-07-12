@@ -4,9 +4,11 @@ import com.nvd.footballmanager.dto.request.auth.UserRegistration;
 import com.nvd.footballmanager.dto.response.CloudinaryResponse;
 import com.nvd.footballmanager.dto.user.UserDTO;
 import com.nvd.footballmanager.exceptions.*;
+import com.nvd.footballmanager.filters.BaseFilter;
 import com.nvd.footballmanager.mappers.UserMapper;
 import com.nvd.footballmanager.model.entity.User;
 import com.nvd.footballmanager.model.enums.UserRole;
+import com.nvd.footballmanager.repository.MemberRepository;
 import com.nvd.footballmanager.repository.UserRepository;
 import com.nvd.footballmanager.service.auth.MailService;
 import com.nvd.footballmanager.service.cloud.CloudinaryService;
@@ -32,7 +34,7 @@ import java.util.UUID;
 import java.util.regex.Pattern;
 
 @Service
-public class UserService extends BaseService<User, UserDTO, UUID> implements UserDetailsService {
+public class UserService extends BaseService<User, UserDTO, BaseFilter, UUID> implements UserDetailsService {
     //    @Value("${app.upload.dir}")
 //    private static String uploadDir;
     private final UserRepository userRepository;
@@ -40,13 +42,15 @@ public class UserService extends BaseService<User, UserDTO, UUID> implements Use
     private final PasswordEncoder passwordEncoder;
     private final MailService mailService;
     private final CloudinaryService cloudinaryService;
+    private final MemberRepository memberRepository;
 
 
     protected UserService(UserRepository userRepository,
                           UserMapper userMapper,
                           PasswordEncoder passwordEncoder,
                           MailService mailService,
-                          CloudinaryService cloudinaryService
+                          CloudinaryService cloudinaryService,
+                          MemberRepository memberRepository
     ) {
         super(userRepository, userMapper);
         this.userRepository = userRepository;
@@ -54,6 +58,7 @@ public class UserService extends BaseService<User, UserDTO, UUID> implements Use
         this.passwordEncoder = passwordEncoder;
         this.mailService = mailService;
         this.cloudinaryService = cloudinaryService;
+        this.memberRepository = memberRepository;
     }
 
     @Transactional
@@ -240,5 +245,12 @@ public class UserService extends BaseService<User, UserDTO, UUID> implements Use
             }
         }
         return user;
+    }
+
+    public boolean hasReachedMaxTeams(UUID userId) {
+
+        long teamCount = memberRepository.countByUserId(userId);
+
+        return teamCount >= Constants.MAX_TEAMS_PER_USER;
     }
 }

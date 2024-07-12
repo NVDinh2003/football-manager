@@ -1,6 +1,7 @@
 package com.nvd.footballmanager.mappers;
 
 import org.mapstruct.MappingTarget;
+import org.springframework.data.domain.Page;
 
 import java.util.List;
 import java.util.Optional;
@@ -11,6 +12,9 @@ public interface BaseMapper<E, DTO> {
 
     E convertToEntity(DTO dto);
 
+    default Page<DTO> convertPageToDTO(Page<E> pageE) {
+        return pageE.map(this::convertToDTO);
+    }
 
     List<DTO> convertListToDTO(List<E> listE);
 

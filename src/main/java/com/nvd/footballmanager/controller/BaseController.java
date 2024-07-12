@@ -2,6 +2,8 @@ package com.nvd.footballmanager.controller;
 
 import com.nvd.footballmanager.dto.CustomApiResponse;
 import com.nvd.footballmanager.exceptions.AccessDeniedException;
+import com.nvd.footballmanager.exceptions.BadRequestException;
+import com.nvd.footballmanager.filters.BaseFilter;
 import com.nvd.footballmanager.service.BaseService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.MappedSuperclass;
@@ -11,25 +13,29 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.UUID;
 
 
 @MappedSuperclass
 @Validated
-public abstract class BaseController<E, DTO, ID extends UUID> {
+public abstract class BaseController<E, DTO, FT extends BaseFilter, ID extends UUID> {
 
-    private final BaseService<E, DTO, ID> baseService;
+    private final BaseService<E, DTO, FT, ID> baseService;
 
-    protected BaseController(BaseService<E, DTO, ID> baseService) {
+    protected BaseController(BaseService<E, DTO, FT, ID> baseService) {
         this.baseService = baseService;
     }
 
-    @GetMapping
-    public ResponseEntity<CustomApiResponse> findAll() {
-        List<DTO> dtos = baseService.findAll();
+//    @GetMapping
+//    public ResponseEntity<CustomApiResponse> findAll() {
+//        List<DTO> dtos = baseService.findAll();
+//
+//        return ResponseEntity.ok(CustomApiResponse.success(dtos));
+//    }
 
-        return ResponseEntity.ok(CustomApiResponse.success(dtos));
+    @GetMapping
+    public ResponseEntity<CustomApiResponse> findAll(FT filter) {
+        return ResponseEntity.ok(CustomApiResponse.success(baseService.findAll(filter)));
     }
 
     @GetMapping("/{id}")
@@ -66,4 +72,10 @@ public abstract class BaseController<E, DTO, ID extends UUID> {
     public ResponseEntity<CustomApiResponse> handleEntityNotFound(EntityNotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(CustomApiResponse.notFound(ex.getMessage()));
     }
+
+    @ExceptionHandler({BadRequestException.class})
+    public ResponseEntity<CustomApiResponse> handleBadRequest(BadRequestException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(CustomApiResponse.badRequest(ex.getMessage()));
+    }
+
 }

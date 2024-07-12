@@ -3,6 +3,7 @@ package com.nvd.footballmanager.service;
 import com.nvd.footballmanager.dto.MembershipRequestDTO;
 import com.nvd.footballmanager.dto.notification.NotiSendRequest;
 import com.nvd.footballmanager.exceptions.AccessDeniedException;
+import com.nvd.footballmanager.exceptions.BadRequestException;
 import com.nvd.footballmanager.mappers.MembershipRequestMapper;
 import com.nvd.footballmanager.mappers.UserMapper;
 import com.nvd.footballmanager.model.entity.Member;
@@ -39,16 +40,23 @@ public class MembershipRequestService {
     private final NotificationService notificationService;
 
     @Transactional
-    public MembershipRequestDTO sendMembershipRequest(UUID userId, UUID teamId) {
+    public MembershipRequestDTO sendMembershipRequest(UUID teamId) {  // user send request to join team
+        UUID userId = userService.getCurrentUser().getId();
         User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException(Constants.ENTITY_NOT_FOUND));
         Team team = teamRepository.findById(teamId).orElseThrow(() -> new EntityNotFoundException(Constants.ENTITY_NOT_FOUND));
 
-        if (membershipRepository.findByUserIdAndTeamId(userId, teamId).isPresent()) {
-            throw new IllegalArgumentException(Constants.ALLREADY_SEND_REQUEST);
+        if (userService.hasReachedMaxTeams(userId)) {  // check if user has reached max teams limit (3)
+            throw new BadRequestException(Constants.MAX_TEAMS_LIMIT_REACHED_MESSAGE);
         }
 
+        // check if user has already sent request to join team
+        if (membershipRepository.findByUserIdAndTeamId(userId, teamId).isPresent()) {
+            throw new IllegalArgumentException(Constants.ALREADY_SEND_REQUEST);
+        }
+
+        // check if user is already a member of team
         if (memberRepository.findByUserIdAndTeamId(userId, teamId).isPresent()) {
-            throw new IllegalArgumentException(Constants.ALLREADY_MEMBER);
+            throw new IllegalArgumentException(Constants.ALREADY_MEMBER);
         }
 
         MembershipRequest membershipRequest = MembershipRequest.builder()
@@ -70,13 +78,13 @@ public class MembershipRequestService {
 
     }
 
-    public List<MembershipRequestDTO> userViewSent(UUID userId) {
+    public List<MembershipRequestDTO> userViewSent(UUID userId) { // user view all sent requests
         userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException(Constants.ENTITY_NOT_FOUND));
         List<MembershipRequest> listSendRequests = membershipRepository.findAllByUserId(userId);
         return membershipRequestMapper.convertListToDTO(listSendRequests);
     }
 
-    public List<MembershipRequestDTO> managerViewAllReceived(UUID teamId) {
+    public List<MembershipRequestDTO> managerViewAllReceived(UUID teamId) {  // manager view all received requests
         teamRepository.findById(teamId).orElseThrow(() -> new EntityNotFoundException(Constants.ENTITY_NOT_FOUND));
         List<MembershipRequest> listReceivedRequests = membershipRepository.findAllByTeamId(teamId);
         return membershipRequestMapper.convertListToDTO(listReceivedRequests);
@@ -105,7 +113,7 @@ public class MembershipRequestService {
                 .orElseThrow(() -> new EntityNotFoundException(Constants.ENTITY_NOT_FOUND));
 
         UUID teamId = membershipRequest.getTeam().getId();
-        if (memberService.isNotManagerPermission(teamId)) {
+        if (memberService.isCurrentUserNotManagerPermissionOfTeam(teamId)) {
             throw new AccessDeniedException(Constants.NOT_MANAGER_PERMISSION);
         }
 
@@ -121,6 +129,9 @@ public class MembershipRequestService {
         // if request is accepted, add user to team, default role is MEMBER
         if (newStatus == MembershipRequestStatus.ACCEPTED) {
             User user = membershipRequest.getUser();
+            if (userService.hasReachedMaxTeams(user.getId())) {  // check if user has reached max teams limit (3)
+                throw new BadRequestException(Constants.MAX_TEAMS_LIMIT_REACHED_MESSAGE);
+            }
             Team team = membershipRequest.getTeam();
 
             Member member = new Member();
@@ -130,11 +141,11 @@ public class MembershipRequestService {
 
             memberRepository.save(member);
 
-            // set notification
+            // set notification send to user
             noti.setTitle("Your request to join team " + team.getName() + " has been accepted!");
             noti.setContent("You are now a member of team " + team.getName());
         } else {
-            // if request is rejected
+            // if request is rejected set notification send to user
             noti.setTitle("Your request to join team " + membershipRequest.getTeam().getName() + " has been rejected!");
             noti.setContent("Your request has been rejected by the team manager");
         }

@@ -2,9 +2,9 @@ package com.nvd.footballmanager.controller;
 
 import com.nvd.footballmanager.dto.CustomApiResponse;
 import com.nvd.footballmanager.dto.user.UserDTO;
-import com.nvd.footballmanager.exceptions.BadRequestException;
 import com.nvd.footballmanager.exceptions.FileErrorException;
 import com.nvd.footballmanager.exceptions.UnableToUpLoadPhotoException;
+import com.nvd.footballmanager.filters.BaseFilter;
 import com.nvd.footballmanager.model.entity.User;
 import com.nvd.footballmanager.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -28,8 +28,7 @@ import java.util.UUID;
 @RequestMapping("/api/users")
 @SecurityRequirement(name = "bearerAuth")  // swagger api require JWT
 @Tag(name = "Users Controller", description = "User APIs")
-public class UserController
-        extends BaseController<User, UserDTO, UUID> {
+public class UserController extends BaseController<User, UserDTO, BaseFilter, UUID> {
     private final UserService userService;
 
     protected UserController(UserService userService) {
@@ -37,11 +36,6 @@ public class UserController
         this.userService = userService;
     }
 
-    @ExceptionHandler({BadRequestException.class})
-    public ResponseEntity<CustomApiResponse> handleBadRequest(BadRequestException ex) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(CustomApiResponse
-                .badRequest(ex.getMessage()));
-    }
 
     @GetMapping("/me")
     public CustomApiResponse getCurrentUser() {
@@ -88,9 +82,10 @@ public class UserController
                     @Content(schema = @Schema(implementation = CustomApiResponse.class), mediaType = "application/json")})
     })
     @GetMapping
+    @Override
     @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity<CustomApiResponse> findAll() {
-        return super.findAll();
+    public ResponseEntity<CustomApiResponse> findAll(BaseFilter filter) {
+        return super.findAll(filter);
     }
 
 }

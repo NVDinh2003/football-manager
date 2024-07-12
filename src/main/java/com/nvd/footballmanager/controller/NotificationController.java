@@ -4,11 +4,10 @@ import com.nvd.footballmanager.dto.CustomApiResponse;
 import com.nvd.footballmanager.dto.notification.MarkNotisReadRequest;
 import com.nvd.footballmanager.dto.notification.NotiSendRequest;
 import com.nvd.footballmanager.dto.notification.NotificationDTO;
-import com.nvd.footballmanager.exceptions.BadRequestException;
+import com.nvd.footballmanager.filters.NotificationFilter;
 import com.nvd.footballmanager.model.entity.Notification;
 import com.nvd.footballmanager.service.NotificationService;
 import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -17,7 +16,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/notifications")
-public class NotificationController extends BaseController<Notification, NotificationDTO, UUID> {
+public class NotificationController extends BaseController<Notification, NotificationDTO, NotificationFilter, UUID> {
 
     private final NotificationService notificationService;
 
@@ -28,8 +27,8 @@ public class NotificationController extends BaseController<Notification, Notific
 
     @Override
     @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity<CustomApiResponse> findAll() {
-        return super.findAll();
+    public ResponseEntity<CustomApiResponse> findAll(NotificationFilter filter) {
+        return super.findAll(filter);
     }
 
     @PostMapping("/send")
@@ -39,8 +38,11 @@ public class NotificationController extends BaseController<Notification, Notific
     }
 
     @GetMapping("/team/{teamId}")
-    public ResponseEntity<CustomApiResponse> getNotificationsByTeamId(@PathVariable UUID teamId) {
-        return ResponseEntity.ok(CustomApiResponse.success(notificationService.getNotificationsByTeamId(teamId)));
+    public ResponseEntity<CustomApiResponse> getNotificationsByTeamId(
+            @ModelAttribute NotificationFilter filter,
+            @PathVariable UUID teamId) {
+        filter.setTeamId(teamId);
+        return ResponseEntity.ok(CustomApiResponse.success(notificationService.getNotificationsByTeam(filter)));
     }
 
     @PutMapping("/on")
@@ -55,8 +57,8 @@ public class NotificationController extends BaseController<Notification, Notific
     }
 
     @GetMapping("/user")
-    public ResponseEntity<CustomApiResponse> getNotificationsByUserId() {
-        return ResponseEntity.ok(CustomApiResponse.success(notificationService.getNotificationsByUser()));
+    public ResponseEntity<CustomApiResponse> getNotificationsByUserId(@ModelAttribute NotificationFilter filter) {
+        return ResponseEntity.ok(CustomApiResponse.success(notificationService.getNotificationsByUser(filter)));
     }
 
     @DeleteMapping("/member/{memberId}")
@@ -65,10 +67,5 @@ public class NotificationController extends BaseController<Notification, Notific
         return ResponseEntity.ok(CustomApiResponse.success("All notifications deleted"));
     }
 
-    @ExceptionHandler({BadRequestException.class})
-    public ResponseEntity<CustomApiResponse> handleBadRequest(BadRequestException ex) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(CustomApiResponse
-                .notFound(ex.getMessage()));
-    }
 
 }

@@ -3,6 +3,8 @@ package com.nvd.footballmanager.service;
 import com.nvd.footballmanager.dto.MemberDTO;
 import com.nvd.footballmanager.dto.TeamDTO;
 import com.nvd.footballmanager.exceptions.AccessDeniedException;
+import com.nvd.footballmanager.exceptions.BadRequestException;
+import com.nvd.footballmanager.filters.MemberFilter;
 import com.nvd.footballmanager.mappers.MemberMapper;
 import com.nvd.footballmanager.mappers.TeamMapper;
 import com.nvd.footballmanager.model.entity.Member;
@@ -17,10 +19,10 @@ import com.nvd.footballmanager.repository.UserRepository;
 import com.nvd.footballmanager.utils.Constants;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -44,6 +46,10 @@ public class MemberService {
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException(Constants.ENTITY_NOT_FOUND));
+
+        if (userService.hasReachedMaxTeams(userId)) {  // check if user has reached max teams limit (3)
+            throw new BadRequestException(Constants.MAX_TEAMS_LIMIT_REACHED_MESSAGE);
+        }
 
         // chekc if user is already a member of team
         Optional<Member> existingMember = memberRepository.findByUserIdAndTeamId(userId, teamId);
@@ -73,7 +79,7 @@ public class MemberService {
     @Transactional
     public TeamDTO removeMember(UUID teamId, UUID memberId) {
 
-        if (isNotManagerPermission(teamId)) {
+        if (isCurrentUserNotManagerPermissionOfTeam(teamId)) {
             throw new AccessDeniedException(Constants.NOT_MANAGER_PERMISSION);
         }
 
@@ -85,7 +91,7 @@ public class MemberService {
 
         UUID userId = member.getUser().getId();
 
-        // xóa luôn MembershipRequest của user mới remove để test lại send request
+        // also delete membership request of this user if exists
         Optional<MembershipRequest> request = requestRepository.findByUserIdAndTeamId(userId, teamId);
         request.ifPresent(requestRepository::delete);
 
@@ -94,11 +100,11 @@ public class MemberService {
         return teamMapper.convertToDTO(team);
     }
 
-    public List<MemberDTO> getAllMembers(UUID teamId) {
-        teamRepository.findById(teamId)
+    public Page<MemberDTO> getAllMembers(MemberFilter filter) {
+        teamRepository.findById(filter.getTeamId())
                 .orElseThrow(() -> new EntityNotFoundException(Constants.ENTITY_NOT_FOUND));
-        List<Member> listMembers = memberRepository.findAllByTeamId(teamId);
-        return memberMapper.convertListToDTO(listMembers);
+        Page<Member> listMembers = memberRepository.findAllWithFilter(filter.getPageable(), filter);
+        return memberMapper.convertPageToDTO(listMembers);
     }
 
     @Transactional
@@ -116,12 +122,13 @@ public class MemberService {
         return memberMapper.convertToDTO(updatedMember);
     }
 
-    public boolean isNotManagerPermission(UUID teamId) {
+    // check if current user is not manager of team
+    public boolean isCurrentUserNotManagerPermissionOfTeam(UUID teamId) {
         Optional<Member> member = memberRepository.findByUserIdAndTeamId(userService.getCurrentUser().getId(), teamId);
         return !(member.isPresent() && member.get().getRole().equals(MemberRole.MANAGER));
     }
 
-    public Optional<Member> currentUserMemberInTeam(UUID teamId) {
+    public Optional<Member> currentUserMemberInTeam(UUID teamId) {  // get current user's member info in team
         teamRepository.findById(teamId)
                 .orElseThrow(() -> new EntityNotFoundException(Constants.ENTITY_NOT_FOUND));
         UUID currentUserId = userService.getCurrentUser().getId();

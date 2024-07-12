@@ -3,6 +3,7 @@ package com.nvd.footballmanager.service;
 import com.nvd.footballmanager.dto.TeamDTO;
 import com.nvd.footballmanager.dto.response.CloudinaryResponse;
 import com.nvd.footballmanager.exceptions.BadRequestException;
+import com.nvd.footballmanager.filters.BaseFilter;
 import com.nvd.footballmanager.mappers.TeamMapper;
 import com.nvd.footballmanager.model.entity.Member;
 import com.nvd.footballmanager.model.entity.Team;
@@ -23,7 +24,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Service
-public class TeamService extends BaseService<Team, TeamDTO, UUID> {
+public class TeamService extends BaseService<Team, TeamDTO, BaseFilter, UUID> {
 
     private final TeamRepository teamRepository;
     private final MemberRepository memberRepository;

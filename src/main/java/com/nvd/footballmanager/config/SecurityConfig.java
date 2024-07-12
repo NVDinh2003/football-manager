@@ -70,7 +70,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-
+                .cors(cors -> cors.disable())
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(allowURL).permitAll()
@@ -81,6 +81,10 @@ public class SecurityConfig {
                                 .jwtAuthenticationConverter(jwtAuthenticationConverter())
                         )
                 )
+//                .formLogin(form -> form
+//                        .defaultSuccessUrl("/api/users", true)
+//                        .permitAll()
+//                )
                 .logout(logout -> logout
                         .logoutUrl("/api/auth/logout")
                         .addLogoutHandler(customLogoutHandler)
@@ -90,6 +94,7 @@ public class SecurityConfig {
                 .httpBasic(Customizer.withDefaults());
         return http.build();
     }
+
 
     @Bean
     JwtDecoder jwtDecoder() {

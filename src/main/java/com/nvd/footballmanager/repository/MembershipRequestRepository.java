@@ -1,5 +1,6 @@
 package com.nvd.footballmanager.repository;
 
+import com.nvd.footballmanager.filters.BaseFilter;
 import com.nvd.footballmanager.model.entity.MembershipRequest;
 import org.springframework.stereotype.Repository;
 
@@ -8,7 +9,8 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface MembershipRequestRepository extends BaseRepository<MembershipRequest, UUID> {
+public interface MembershipRequestRepository extends BaseRepository<MembershipRequest, BaseFilter, UUID> {
+
     Optional<MembershipRequest> findByUserIdAndTeamId(UUID userId, UUID teamId);
 
     List<MembershipRequest> findAllByUserId(UUID userId);

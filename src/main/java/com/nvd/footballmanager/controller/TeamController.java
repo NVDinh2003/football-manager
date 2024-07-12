@@ -6,6 +6,9 @@ import com.nvd.footballmanager.dto.MemberDTO;
 import com.nvd.footballmanager.dto.TeamDTO;
 import com.nvd.footballmanager.exceptions.AccessDeniedException;
 import com.nvd.footballmanager.exceptions.BadRequestException;
+import com.nvd.footballmanager.filters.AchievementFilter;
+import com.nvd.footballmanager.filters.BaseFilter;
+import com.nvd.footballmanager.filters.MemberFilter;
 import com.nvd.footballmanager.model.entity.Team;
 import com.nvd.footballmanager.service.AchievementService;
 import com.nvd.footballmanager.service.MemberService;
@@ -23,7 +26,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/teams")
-public class TeamController extends BaseController<Team, TeamDTO, UUID> {
+public class TeamController extends BaseController<Team, TeamDTO, BaseFilter, UUID> {
 
     private final TeamService teamService;
 
@@ -49,7 +52,7 @@ public class TeamController extends BaseController<Team, TeamDTO, UUID> {
     public ResponseEntity<CustomApiResponse> update(@PathVariable("id") UUID id,
                                                     @RequestPart("team") @Valid TeamDTO teamDTO,
                                                     @RequestPart(value = "logo", required = false) MultipartFile logo) {
-        if (memberService.isNotManagerPermission(id)) {
+        if (memberService.isCurrentUserNotManagerPermissionOfTeam(id)) {
             throw new AccessDeniedException(Constants.NOT_MANAGER_PERMISSION);
         }
         TeamDTO createdTeam = teamService.update(id, teamDTO, logo);
@@ -60,7 +63,7 @@ public class TeamController extends BaseController<Team, TeamDTO, UUID> {
     public ResponseEntity<CustomApiResponse> addMember(@PathVariable("teamId") UUID teamId,
                                                        @RequestBody @Valid MemberDTO memberDTO,
                                                        @PathVariable("userId") UUID userId) {
-        if (memberService.isNotManagerPermission(teamId)) {
+        if (memberService.isCurrentUserNotManagerPermissionOfTeam(teamId)) {
             throw new AccessDeniedException(Constants.NOT_MANAGER_PERMISSION);
         }
         try {
@@ -94,14 +97,17 @@ public class TeamController extends BaseController<Team, TeamDTO, UUID> {
     }
 
     @GetMapping("/{teamId}/members")
-    public ResponseEntity<CustomApiResponse> getAllMembers(@PathVariable("teamId") UUID teamId) {
-        return ResponseEntity.ok(CustomApiResponse.success(memberService.getAllMembers(teamId)));
+    public ResponseEntity<CustomApiResponse> getAllMembers(
+            @ModelAttribute MemberFilter filter,
+            @PathVariable("teamId") UUID teamId) {
+        filter.setTeamId(teamId);
+        return ResponseEntity.ok(CustomApiResponse.success(memberService.getAllMembers(filter)));
     }
 
     @PostMapping("/{id}/achievements")
     public ResponseEntity<CustomApiResponse> addAchievement(@PathVariable("id") UUID teamId,
                                                             @RequestBody @Valid AchievementDTO achievementDTO) {
-        if (memberService.isNotManagerPermission(teamId)) {
+        if (memberService.isCurrentUserNotManagerPermissionOfTeam(teamId)) {
             throw new AccessDeniedException(Constants.NOT_MANAGER_PERMISSION);
         }
         AchievementDTO achievement = achievementService.addAchievement(teamId, achievementDTO);
@@ -109,8 +115,11 @@ public class TeamController extends BaseController<Team, TeamDTO, UUID> {
     }
 
     @GetMapping("/{id}/achievements")
-    public ResponseEntity<CustomApiResponse> getAllAchievements(@PathVariable("id") UUID teamId) {
-        return ResponseEntity.ok(CustomApiResponse.success(achievementService.getAllAchievements(teamId)));
+    public ResponseEntity<CustomApiResponse> getAllAchievements(
+            AchievementFilter filter,
+            @PathVariable("id") UUID teamId) {
+        filter.setTeamId(teamId);
+        return ResponseEntity.ok(CustomApiResponse.success(achievementService.getAllAchievements(filter)));
     }
 
     @PutMapping("{teamId}/achievements/{achId}")

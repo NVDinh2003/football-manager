@@ -1,6 +1,7 @@
 package com.nvd.footballmanager.service;
 
 import com.nvd.footballmanager.dto.AchievementDTO;
+import com.nvd.footballmanager.filters.AchievementFilter;
 import com.nvd.footballmanager.mappers.AchievementMapper;
 import com.nvd.footballmanager.model.entity.Achievement;
 import com.nvd.footballmanager.model.entity.Team;
@@ -8,14 +9,14 @@ import com.nvd.footballmanager.repository.AchievementRepository;
 import com.nvd.footballmanager.repository.TeamRepository;
 import com.nvd.footballmanager.utils.Constants;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.UUID;
 
 @Service
 //@RequiredArgsConstructor
-public class AchievementService extends BaseService<Achievement, AchievementDTO, UUID> {
+public class AchievementService extends BaseService<Achievement, AchievementDTO, AchievementFilter, UUID> {
 
     private final AchievementRepository achievementRepository;
     private final AchievementMapper achievementMapper;
@@ -42,26 +43,10 @@ public class AchievementService extends BaseService<Achievement, AchievementDTO,
         return achievementMapper.convertToDTO(savedAch);
     }
 
-    public List<AchievementDTO> getAllAchievements(UUID teamId) {
-        teamRepository.findById(teamId)
+    public Page<AchievementDTO> getAllAchievements(AchievementFilter filter) {
+        teamRepository.findById(filter.getTeamId())
                 .orElseThrow(() -> new EntityNotFoundException(Constants.ENTITY_NOT_FOUND));
-
-
-        List<Achievement> list = achievementRepository.findAllByTeamId(teamId);
-        return achievementMapper.convertListToDTO(list);
+        return super.findAll(filter);
     }
-
-//    @Transactional
-//    public AchievementDTO updateAchievement(UUID teamId, UUID achId, AchievementDTO achievementDTO) {
-//        teamRepository.findById(teamId)
-//                .orElseThrow(EntityNotFoundException::new);
-//        Achievement achievement = achievementRepository.findById(achId)
-//                .orElseThrow(EntityNotFoundException::new);
-//
-//        Achievement updatedAch = achievementMapper.updateEntity(achievementDTO, achievement);
-//        achievementRepository.save(updatedAch);
-//
-//        return achievementMapper.convertToDTO(updatedAch);
-//    }
 
 }
