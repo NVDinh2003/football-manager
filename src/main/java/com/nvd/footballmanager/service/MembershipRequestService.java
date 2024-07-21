@@ -17,6 +17,7 @@ import com.nvd.footballmanager.repository.MembershipRequestRepository;
 import com.nvd.footballmanager.repository.TeamRepository;
 import com.nvd.footballmanager.repository.UserRepository;
 import com.nvd.footballmanager.utils.Constants;
+import com.nvd.footballmanager.utils.NotificationMessages;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -142,12 +143,12 @@ public class MembershipRequestService {
             memberRepository.save(member);
 
             // set notification send to user
-            noti.setTitle("Your request to join team " + team.getName() + " has been accepted!");
-            noti.setContent("You are now a member of team " + team.getName());
+            noti.setTitle(String.format(NotificationMessages.JOIN_TEAM_ACCEPTED_TITLE, team.getName()));
+            noti.setContent(String.format(NotificationMessages.JOIN_TEAM_ACCEPTED_CONTENT, team.getName()));
         } else {
             // if request is rejected set notification send to user
-            noti.setTitle("Your request to join team " + membershipRequest.getTeam().getName() + " has been rejected!");
-            noti.setContent("Your request has been rejected by the team manager");
+            noti.setTitle(String.format(NotificationMessages.JOIN_TEAM_REJECTED_TITLE, membershipRequest.getTeam().getName()));
+            noti.setContent(NotificationMessages.JOIN_TEAM_REJECTED_CONTENT);
         }
 
         notificationService.sendNotiToUser(noti, membershipRequest.getUser());
