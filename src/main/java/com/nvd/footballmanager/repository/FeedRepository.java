@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.UUID;
 
 @Repository
@@ -21,4 +22,7 @@ public interface FeedRepository extends BaseRepository<Feed, FeedFilter, UUID> {
             AND (:#{#filter.userId == NULL} = TRUE OR f.user.id = :#{#filter.userId}) 
             """)
     Page<Feed> findAllWithFilter(Pageable pageable, FeedFilter filter);
+
+    @Query(value = "SELECT * FROM feeds ORDER BY RAND() LIMIT ?1", nativeQuery = true)
+    List<Feed> findRandomLimit(int limit);
 }

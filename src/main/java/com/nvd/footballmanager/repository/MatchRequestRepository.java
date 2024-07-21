@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.UUID;
 
 @Repository
@@ -35,4 +36,7 @@ public interface MatchRequestRepository extends BaseRepository<MatchRequest, Mat
             OR (:#{#filter.rankPoints == null} = TRUE OR m.team.rankPoints <= :#{#filter.rankPoints} + :#{#filter.rankPointRange})
             """)
     Page<MatchRequest> suggest(Pageable pageable, MatchRequestFilter filter);
+
+    @Query(value = "SELECT * FROM match_requests ORDER BY RAND() LIMIT ?1", nativeQuery = true)
+    List<MatchRequest> findRandomLimit(int limit);
 }

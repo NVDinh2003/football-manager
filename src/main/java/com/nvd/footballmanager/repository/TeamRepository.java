@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.UUID;
 
 @Repository
@@ -20,4 +21,7 @@ public interface TeamRepository extends BaseRepository<Team, BaseFilter, UUID> {
             )
             """)
     Page<Team> findAllWithFilter(Pageable pageable, BaseFilter filter);
+
+    @Query(value = "SELECT * FROM teams ORDER BY RAND() LIMIT ?1", nativeQuery = true)
+    List<Team> findRandomLimit(int limit);
 }

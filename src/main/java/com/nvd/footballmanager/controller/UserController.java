@@ -6,6 +6,7 @@ import com.nvd.footballmanager.exceptions.FileErrorException;
 import com.nvd.footballmanager.exceptions.UnableToUpLoadPhotoException;
 import com.nvd.footballmanager.filters.BaseFilter;
 import com.nvd.footballmanager.model.entity.User;
+import com.nvd.footballmanager.repository.UserRepository;
 import com.nvd.footballmanager.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -30,12 +31,13 @@ import java.util.UUID;
 @Tag(name = "Users Controller", description = "User APIs")
 public class UserController extends BaseController<User, UserDTO, BaseFilter, UUID> {
     private final UserService userService;
+    private final UserRepository userRepository;
 
-    protected UserController(UserService userService) {
+    protected UserController(UserService userService, UserRepository userRepository) {
         super(userService);
         this.userService = userService;
+        this.userRepository = userRepository;
     }
-
 
     @GetMapping("/me")
     public CustomApiResponse getCurrentUser() {

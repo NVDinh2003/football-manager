@@ -42,4 +42,6 @@ public interface MemberRepository extends BaseRepository<Member, MemberFilter, U
     Optional<Member> findByIdAndUserId(UUID memberId, UUID id);
 
     long countByUserId(UUID userId);
+
+    List<Member> findAllByRole(MemberRole memberRole);
 }

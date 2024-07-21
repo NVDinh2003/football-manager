@@ -32,4 +32,5 @@ public class Constants {
     public static final int MAX_TEAMS_PER_USER = 3;
     public static final String MAX_TEAMS_LIMIT_REACHED_MESSAGE = "User has reached the maximum number of teams allowed (" + MAX_TEAMS_PER_USER + ").";
     public static final int RANK_POINT_RANGE = 6;
+    public static final String USER_ID_CACHE = "user_id_cache";
 }

@@ -247,10 +247,17 @@ public class UserService extends BaseService<User, UserDTO, BaseFilter, UUID> im
         return user;
     }
 
-    public boolean hasReachedMaxTeams(UUID userId) {
+    public boolean hasReachedMaxTeams(UUID userId) {  // each user can only join {3} teams
 
         long teamCount = memberRepository.countByUserId(userId);
 
         return teamCount >= Constants.MAX_TEAMS_PER_USER;
+    }
+
+    private void validateEmail(String newEmail) {
+        User userWithEmail = userRepository.findByEmail(newEmail);
+        if (userWithEmail != null) {
+            throw new BadRequestException(Constants.EMAIL_ALREADY_EXISTS);
+        }
     }
 }

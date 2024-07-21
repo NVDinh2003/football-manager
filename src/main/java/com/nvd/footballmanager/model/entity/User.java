@@ -8,7 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.sql.Date;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
 
@@ -19,14 +19,14 @@ import java.util.Set;
 @Table(name = "users")
 public class User extends BaseModel {
 
-    @Column(nullable = false, length = 30)
+    @Column(nullable = false, length = 30, unique = true)
     private String username;
     @Column(nullable = false, length = 75)
     @JsonIgnore
     private String password;
     @Column(nullable = false, length = 30)
     private String name;
-    private Date dob;
+    private LocalDate dob;
     @Column(nullable = false, unique = true, length = 50)
     private String email;
     @Column(unique = true, length = 15)
@@ -36,7 +36,7 @@ public class User extends BaseModel {
     @Column(length = 9)
     private UserRole role;
     @Column(columnDefinition = "boolean default false")
-    private Boolean enabled = false;
+    private Boolean enabled;
     @JsonIgnore
     private Long verificationCode;
 
@@ -49,7 +49,7 @@ public class User extends BaseModel {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Comment> comments;
-    
+
     public User() {
         this.enabled = false;
     }

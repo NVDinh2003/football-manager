@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -34,4 +35,7 @@ public interface UserRepository extends BaseRepository<User, BaseFilter, UUID> {
     Optional<User> findByPhoneNumber(String phoneNumber);
 
     boolean existsByRole(UserRole role);
+
+    @Query(value = "SELECT * FROM users ORDER BY RAND() LIMIT ?1", nativeQuery = true)
+    List<User> findRandomLimit(int limit);
 }
