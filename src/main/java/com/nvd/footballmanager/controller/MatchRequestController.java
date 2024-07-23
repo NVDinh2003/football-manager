@@ -3,14 +3,11 @@ package com.nvd.footballmanager.controller;
 import com.nvd.footballmanager.dto.CustomApiResponse;
 import com.nvd.footballmanager.dto.MatchRequestDTO;
 import com.nvd.footballmanager.exceptions.AccessDeniedException;
-import com.nvd.footballmanager.exceptions.BadRequestException;
 import com.nvd.footballmanager.filters.MatchRequestFilter;
 import com.nvd.footballmanager.service.MatchRequestService;
-import com.nvd.footballmanager.utils.Constants;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,23 +18,6 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class MatchRequestController {
     private final MatchRequestService matchRequestService;
-
-
-    @ExceptionHandler({EntityNotFoundException.class})
-    public ResponseEntity<CustomApiResponse> entityNotFound() {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(CustomApiResponse
-                .forbidden(Constants.ENTITY_NOT_FOUND));
-    }
-
-    @ExceptionHandler({AccessDeniedException.class})
-    public ResponseEntity<CustomApiResponse> notPermission(AccessDeniedException ex) {
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(CustomApiResponse.forbidden(ex.getMessage()));
-    }
-
-    @ExceptionHandler({BadRequestException.class})
-    public ResponseEntity<CustomApiResponse> handleBadRequest(BadRequestException ex) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(CustomApiResponse.badRequest(ex.getMessage()));
-    }
 
     @PostMapping()
     public ResponseEntity<CustomApiResponse> createMatchRequest(@RequestBody MatchRequestDTO dto) {
