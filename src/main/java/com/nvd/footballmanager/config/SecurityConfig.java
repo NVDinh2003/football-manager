@@ -38,7 +38,8 @@ import java.util.stream.Collectors;
 //@EnableGlobalMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
 
-    String[] allowURL = {
+    String[] allowURLs = {
+            "/", "/ws/**",
             "/api/auth/**",
             "/swagger-ui/**",
             "/v3/api-docs/**",
@@ -73,7 +74,7 @@ public class SecurityConfig {
                 .cors(cors -> cors.disable())
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(allowURL).permitAll()
+                        .requestMatchers(allowURLs).permitAll()
                         .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2

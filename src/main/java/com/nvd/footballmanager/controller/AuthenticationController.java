@@ -12,10 +12,10 @@ import com.nvd.footballmanager.exceptions.IncorrectVerificationCodeException;
 import com.nvd.footballmanager.exceptions.UserDoesNotExistException;
 import com.nvd.footballmanager.service.UserService;
 import com.nvd.footballmanager.service.auth.TokenService;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import com.nvd.footballmanager.utils.Constants;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -25,7 +25,6 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 @RestController
@@ -38,7 +37,7 @@ public class AuthenticationController {
     private final UserService userService;
     private final TokenService tokenService;
     private final AuthenticationManager authenticationManager;
-
+    
 
     @ExceptionHandler({EmailAlreadyTakenException.class})
     public ResponseEntity<CustomApiResponse> handleEmailTaken() {
@@ -92,26 +91,23 @@ public class AuthenticationController {
     public ResponseEntity<CustomApiResponse> login(@RequestBody @Valid UserLogin userLogin) {
 
         LoginResponse loginResponse;
-//
-//        return ApiResponse.created(loginResponse);
-        String accessToken = null;
         try {
             Authentication auth = authenticationManager
                     .authenticate(new UsernamePasswordAuthenticationToken(userLogin.getUsername(), userLogin.getPassword()));
-//            UserDTO userDTO = userService.getUserByUsername(userLogin.getUsername());
-            accessToken = tokenService.generateAccessToken(auth);
+            String accessToken = tokenService.generateAccessToken(auth);
             String refreshToken = tokenService.generateRefreshToken(auth);
             loginResponse = new LoginResponse(accessToken, refreshToken);
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
+                    .body(CustomApiResponse.success(loginResponse));
         } catch (AuthenticationException e) {
-            loginResponse = new LoginResponse("", "");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(CustomApiResponse.unauthorized(Constants.INVALID_USERNAME_PASSWORD));
         }
-        if (accessToken == null)
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        return ResponseEntity.ok(CustomApiResponse.success(loginResponse));
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<Map<String, String>> refresh(@RequestBody LinkedHashMap<String, String> request) {
+    public ResponseEntity<Map<String, String>> refresh(@RequestBody Map<String, String> request) {
         String refreshToken = request.get("refreshToken");
 
         if (tokenService.validateToken(refreshToken)) {
@@ -132,8 +128,12 @@ public class AuthenticationController {
         }
     }
 
-    @PostMapping("/logout")
-    public void logout(HttpServletRequest request, HttpServletResponse response) {
-        customLogoutHandler.logout(request, response, null);
-    }
+//    @PostMapping("/logout")
+//    public ResponseEntity<CustomApiResponse> logout(HttpServletRequest request, HttpServletResponse response) {
+//        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+//        if (auth != null) {
+//            customLogoutHandler.logout(request, response, auth);
+//        }
+//        return ResponseEntity.ok(CustomApiResponse.success("Logged out successfully"));
+//    }
 }

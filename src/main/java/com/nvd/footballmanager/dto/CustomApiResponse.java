@@ -105,4 +105,13 @@ public class CustomApiResponse {
                 .success(false)
                 .build();
     }
+
+    public static CustomApiResponse unauthorized(String message) {
+        return CustomApiResponse.builder()
+                .message(message)
+                .code(HttpStatus.UNAUTHORIZED.value())
+                .status(HttpStatus.UNAUTHORIZED)
+                .success(false)
+                .build();
+    }
 }

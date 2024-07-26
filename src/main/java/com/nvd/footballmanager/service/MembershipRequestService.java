@@ -20,6 +20,7 @@ import com.nvd.footballmanager.utils.Constants;
 import com.nvd.footballmanager.utils.NotificationMessages;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,6 +40,7 @@ public class MembershipRequestService {
     private final UserService userService;
     private final UserMapper userMapper;
     private final NotificationService notificationService;
+    private final SimpMessageSendingOperations simpMessageSendingOperations;
 
     @Transactional
     public MembershipRequestDTO sendMembershipRequest(UUID teamId) {  // user send request to join team

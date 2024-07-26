@@ -11,6 +11,7 @@ import com.nvd.footballmanager.repository.*;
 import com.nvd.footballmanager.utils.Constants;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.data.domain.Page;
+import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,6 +29,7 @@ public class NotificationService extends BaseService<Notification, NotificationD
     private final TeamRepository teamRepository;
     private final UserRepository userRepository;
     private final UserService userService;
+    private final SimpMessageSendingOperations simpMessageSendingOperations;
 
     protected NotificationService(NotificationRepository notificationRepository,
                                   NotificationMapper notificationMapper,
@@ -36,7 +38,7 @@ public class NotificationService extends BaseService<Notification, NotificationD
                                   MemberRepository memberRepository,
                                   TeamRepository teamRepository,
                                   UserRepository userRepository,
-                                  UserService userService) {
+                                  UserService userService, SimpMessageSendingOperations simpMessageSendingOperations) {
         super(notificationRepository, notificationMapper);
         this.notificationRepository = notificationRepository;
         this.notificationMapper = notificationMapper;
@@ -46,6 +48,7 @@ public class NotificationService extends BaseService<Notification, NotificationD
         this.teamRepository = teamRepository;
         this.userRepository = userRepository;
         this.userService = userService;
+        this.simpMessageSendingOperations = simpMessageSendingOperations;
     }
 
     @Transactional
@@ -57,6 +60,10 @@ public class NotificationService extends BaseService<Notification, NotificationD
         notification.setUser(user);
 
         notificationRepository.save(notification);
+
+        simpMessageSendingOperations
+                .convertAndSendToUser(user.getUsername(),
+                        Constants.DESTINATION_PUSH_NOTI, notificationMapper.convertToDTO(notification));
     }
 
     @Transactional
@@ -77,6 +84,9 @@ public class NotificationService extends BaseService<Notification, NotificationD
 
         notification.setMemberRecipients(recipients);
         notificationRepository.save(notification);
+        simpMessageSendingOperations
+                .convertAndSendToUser(manager.getUser().getUsername(),
+                        Constants.DESTINATION_PUSH_NOTI, notificationMapper.convertToDTO(notification));
     }
 
     @Transactional
@@ -106,6 +116,9 @@ public class NotificationService extends BaseService<Notification, NotificationD
                 memberNotification.setMember(member);
                 memberNotification.setNotification(notification);
                 memberNotification = memberNotificationRepository.save(memberNotification);
+                simpMessageSendingOperations
+                        .convertAndSendToUser(member.getUser().getUsername(),
+                                Constants.DESTINATION_PUSH_NOTI, notificationMapper.convertToDTO(notification));
                 recipients.add(memberNotification);
             }
         }
@@ -132,9 +145,15 @@ public class NotificationService extends BaseService<Notification, NotificationD
 
     private void checkPermissionToReadNoti(UUID notiId) {
         Notification noti = notificationRepository.findById(notiId).orElseThrow(() -> new EntityNotFoundException(Constants.ENTITY_NOT_FOUND));
-        UUID teamId = noti.getTeam().getId();
-        if (memberService.currentUserMemberInTeam(teamId).isEmpty())
-            throw new AccessDeniedException(Constants.ACCESS_DENIED);
+        if (noti.getTeam() != null) {
+            UUID teamId = noti.getTeam().getId();
+            if (memberService.currentUserMemberInTeam(teamId).isEmpty())
+                throw new AccessDeniedException(Constants.ACCESS_DENIED);
+        } else if (noti.getUser() != null) {
+            UUID userId = noti.getUser().getId();
+            if (!userService.getCurrentUser().getId().equals(userId))
+                throw new AccessDeniedException(Constants.ACCESS_DENIED);
+        }
     }
 
     @Transactional

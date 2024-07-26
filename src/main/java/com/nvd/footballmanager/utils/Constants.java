@@ -5,6 +5,7 @@ public class Constants {
     public static final String DATA_NOT_FOUND = "DATA_NOT_FOUND";
     public static final String SUCCESS = "SUCCESS";
     public static final String CREATED = "CREATED";
+    public static final String INVALID_USERNAME_PASSWORD = "Invalid username or password";
     public static final String BAD_REQUEST = "BAD_REQUEST";
     public static final String NOT_ACTIVE = "NOT_ACTIVE";
     public static final String EMAIL_ALREADY_EXISTS = "EMAIL_ALREADY_EXISTS";
@@ -32,4 +33,5 @@ public class Constants {
     public static final int MAX_TEAMS_PER_USER = 3;
     public static final String MAX_TEAMS_LIMIT_REACHED_MESSAGE = "User has reached the maximum number of teams allowed (" + MAX_TEAMS_PER_USER + ").";
     public static final int RANK_POINT_RANGE = 6;
+    public static final String DESTINATION_PUSH_NOTI = "/topic/notifications";
 }
