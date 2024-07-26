@@ -7,6 +7,10 @@ target/
 **/resource/*.json
 **/StoredCredentials
 **/StoredCredential
+**/credentials.json
+**/credentials
+**/firebase-service-account
+**/firebase-service-account.json
 
 
 ### STS ###

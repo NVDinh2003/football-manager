@@ -4,15 +4,19 @@ import com.nvd.footballmanager.dto.CustomApiResponse;
 import com.nvd.footballmanager.dto.notification.MarkNotisReadRequest;
 import com.nvd.footballmanager.dto.notification.NotiSendRequest;
 import com.nvd.footballmanager.dto.notification.NotificationDTO;
+import com.nvd.footballmanager.dto.notification.NotificationResponse;
 import com.nvd.footballmanager.filters.NotificationFilter;
 import com.nvd.footballmanager.model.entity.Notification;
 import com.nvd.footballmanager.service.NotificationService;
+import com.nvd.footballmanager.service.firebase.FCMService;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
 
 @RestController
 @RequestMapping("/api/notifications")
@@ -20,15 +24,24 @@ public class NotificationController extends BaseController<Notification, Notific
 
     private final NotificationService notificationService;
 
-    protected NotificationController(NotificationService notificationService) {
+    private final FCMService fcmService;
+
+    protected NotificationController(NotificationService notificationService, FCMService fcmService) {
         super(notificationService);
         this.notificationService = notificationService;
+        this.fcmService = fcmService;
     }
 
     @Override
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<CustomApiResponse> findAll(NotificationFilter filter) {
         return super.findAll(filter);
+    }
+
+    @PostMapping("/notify")
+    public ResponseEntity sendNotification(@RequestBody NotiSendRequest request) throws ExecutionException, InterruptedException {
+        fcmService.sendMessageToToken(request);
+        return new ResponseEntity<>(new NotificationResponse(HttpStatus.OK.value(), "Notification has been sent."), HttpStatus.OK);
     }
 
     @PostMapping("/send")

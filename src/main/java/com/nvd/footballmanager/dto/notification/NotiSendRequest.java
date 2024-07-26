@@ -16,4 +16,8 @@ public class NotiSendRequest {
     private String title;
     @NotBlank
     private String content;
+
+    private String topic;
+    // FCM token: là 1 address duy nhat de FCm gui thong bao den
+    private String token;
 }
