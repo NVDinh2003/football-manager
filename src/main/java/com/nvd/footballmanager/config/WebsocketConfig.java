@@ -5,6 +5,7 @@ import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
+import org.springframework.web.socket.config.annotation.WebSocketTransportRegistration;
 
 @Configuration
 // enable WebSocket với STOMP
@@ -32,5 +33,12 @@ public class WebsocketConfig implements WebSocketMessageBrokerConfigurer {
         registry.addEndpoint("/stomp")
                 .setAllowedOriginPatterns(URL_ACCEPT)
                 .withSockJS();  // support old browser
+    }
+
+    @Override   // kiem soat payload limit...
+    public void configureWebSocketTransport(WebSocketTransportRegistration registration) {
+        registration.setMessageSizeLimit(64 * 1024); // 64KB
+        registration.setSendBufferSizeLimit(512 * 1024); // 512KB
+        registration.setSendTimeLimit(20 * 1000); // 20 seconds
     }
 }

@@ -9,8 +9,11 @@ import com.nvd.footballmanager.model.entity.*;
 import com.nvd.footballmanager.model.enums.MemberRole;
 import com.nvd.footballmanager.repository.*;
 import com.nvd.footballmanager.utils.Constants;
+import com.nvd.footballmanager.utils.NotificationMessages;
 import jakarta.persistence.EntityNotFoundException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.messaging.MessageDeliveryException;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,6 +22,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 public class NotificationService extends BaseService<Notification, NotificationDTO, NotificationFilter, UUID> {
 
     private final NotificationRepository notificationRepository;
@@ -61,9 +65,13 @@ public class NotificationService extends BaseService<Notification, NotificationD
 
         notificationRepository.save(notification);
 
-        simpMessageSendingOperations
-                .convertAndSendToUser(user.getUsername(),
-                        Constants.DESTINATION_PUSH_NOTI, notificationMapper.convertToDTO(notification));
+        try {
+            simpMessageSendingOperations
+                    .convertAndSendToUser(user.getUsername(),
+                            Constants.DESTINATION_PUSH_NOTI, notificationMapper.convertToDTO(notification));
+        } catch (MessageDeliveryException e) {
+            log.error(NotificationMessages.FAIL_SEND_NOTI_SIZE_LIMIT, e.getMessage());
+        }
     }
 
     @Transactional
@@ -84,9 +92,13 @@ public class NotificationService extends BaseService<Notification, NotificationD
 
         notification.setMemberRecipients(recipients);
         notificationRepository.save(notification);
-        simpMessageSendingOperations
-                .convertAndSendToUser(manager.getUser().getUsername(),
-                        Constants.DESTINATION_PUSH_NOTI, notificationMapper.convertToDTO(notification));
+        try {
+            simpMessageSendingOperations
+                    .convertAndSendToUser(manager.getUser().getUsername(),
+                            Constants.DESTINATION_PUSH_NOTI, notificationMapper.convertToDTO(notification));
+        } catch (MessageDeliveryException e) {
+            log.error(NotificationMessages.FAIL_SEND_NOTI_SIZE_LIMIT, e.getMessage());
+        }
     }
 
     @Transactional
@@ -116,9 +128,13 @@ public class NotificationService extends BaseService<Notification, NotificationD
                 memberNotification.setMember(member);
                 memberNotification.setNotification(notification);
                 memberNotification = memberNotificationRepository.save(memberNotification);
-                simpMessageSendingOperations
-                        .convertAndSendToUser(member.getUser().getUsername(),
-                                Constants.DESTINATION_PUSH_NOTI, notificationMapper.convertToDTO(notification));
+                try {
+                    simpMessageSendingOperations
+                            .convertAndSendToUser(member.getUser().getUsername(),
+                                    Constants.DESTINATION_PUSH_NOTI, notificationMapper.convertToDTO(notification));
+                } catch (MessageDeliveryException e) {
+                    log.error(NotificationMessages.FAIL_SEND_NOTI_SIZE_LIMIT, e.getMessage());
+                }
                 recipients.add(memberNotification);
             }
         }
