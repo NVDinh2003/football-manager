@@ -4,14 +4,15 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
-**/resource/*.json
-**/StoredCredentials
-**/StoredCredential
-**/credentials.json
-**/credentials
-**/firebase-service-account
-**/firebase-service-account.json
+# Ignore specific sensitive files
+src/main/resources/credentials.json
+src/main/resources/firebase-service-account.json
+tokens/StoredCredential
 
+# Để đảm bảo, thêm các pattern tổng quát
+**/credentials.json
+**/firebase-service-account.json
+**/StoredCredential
 
 ### STS ###
 .apt_generated
