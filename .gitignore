@@ -4,9 +4,11 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
-**/resource/*.json
-**/StoredCredentials
+**/resources/*.json
 **/StoredCredential
+**/credentials.json
+
+
 
 
 ### STS ###
