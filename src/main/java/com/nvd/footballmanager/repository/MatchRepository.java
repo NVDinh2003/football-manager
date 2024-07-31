@@ -5,8 +5,11 @@ import com.nvd.footballmanager.model.entity.Match;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 @Repository
@@ -23,4 +26,11 @@ public interface MatchRepository extends BaseRepository<Match, MatchFilter, UUID
             AND (:#{#filter.toDate == NULL} = TRUE OR m.time <= :#{#filter.toDate})
             """)
     Page<Match> findAllWithFilter(Pageable pageable, MatchFilter filter);
+
+    @Query("""
+            SELECT m FROM Match m 
+            WHERE m.confirmed = false AND m.updatedAt < :now
+            """)
+    List<Match> findAllByTimeBeforeAndNotConfirmed(@Param("now") Instant now);
+
 }

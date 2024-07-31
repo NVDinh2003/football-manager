@@ -14,6 +14,7 @@ import com.nvd.footballmanager.repository.MatchRepository;
 import com.nvd.footballmanager.repository.MemberRepository;
 import com.nvd.footballmanager.repository.TeamRepository;
 import com.nvd.footballmanager.utils.Constants;
+import com.nvd.footballmanager.utils.NotificationMessages;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -112,7 +113,7 @@ public class MatchService extends BaseService<Match, MatchDTO, MatchFilter, UUID
             // send noti comfirm result to opponent manager
             NotiSendRequest notiToOpponentManager = new NotiSendRequest();
             notiToOpponentManager.setTitle("Match result confirmation.");
-            String contentResult = String.format("Match between your team and %s has ended with score: %s %s - %s %s. Please confirm the result by click this link: %s/api/matches/%s/confirm-result",
+            String contentResult = String.format(NotificationMessages.CONTENT_MATCH_RESULT,
                     manager.get().getTeam().getName(),
                     team2.getName(),
                     dto.getTeam2Scored(),
@@ -173,4 +174,28 @@ public class MatchService extends BaseService<Match, MatchDTO, MatchFilter, UUID
 
         return matchMapper.convertToDTO(updatedMatch);
     }
+
+    public void sendNotiToManagerForConfirmMatchResult() {
+        Instant now = Instant.now();
+        matchRepository.findAllByTimeBeforeAndNotConfirmed(now)
+                .forEach(match -> {
+                    NotiSendRequest noti = new NotiSendRequest();
+                    noti.setTitle("Remind: confirm match result.");
+                    String content = String.format(NotificationMessages.CONTENT_MATCH_RESULT,
+                            match.getTeam1().getName(),
+                            match.getTeam2().getName(),
+                            match.getTeam2Scored(),
+                            match.getTeam1Scored(),
+                            match.getTeam1().getName(),
+                            baseUrl,
+                            match.getId());
+
+                    noti.setContent(content);
+
+                    Member manager = memberRepository.findByRoleAndTeamId(MemberRole.MANAGER, match.getTeam1().getId());
+                    notificationService.sendNotiToManager(noti, manager);
+                });
+    }
+
+
 }

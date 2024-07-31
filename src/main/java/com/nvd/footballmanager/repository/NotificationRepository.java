@@ -7,6 +7,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 @Repository
@@ -19,4 +21,6 @@ public interface NotificationRepository extends BaseRepository<Notification, Not
                   AND (:#{#filter.userId == NULL} = TRUE OR n.user.id = :#{#filter.userId})       
             """)
     Page<Notification> findAllWithFilter(Pageable pageable, NotificationFilter filter);
+
+    List<Notification> findAllByCreatedAtBefore(Instant thresholdTime);
 }
