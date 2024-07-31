@@ -4,8 +4,12 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
-**/resource/*.json
-**/StoredCredentials
+# Ignore specific sensitive files
+src/main/resources/credentials.json
+tokens/StoredCredential
+
+# Để đảm bảo, thêm các pattern tổng quát
+**/credentials.json
 **/StoredCredential
 
 
