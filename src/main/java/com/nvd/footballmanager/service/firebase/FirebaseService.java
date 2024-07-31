@@ -12,10 +12,10 @@ import org.springframework.stereotype.Service;
 import java.util.concurrent.ExecutionException;
 
 @Service
-public class FCMService {
+public class FirebaseService {
     @Value("${app.base.url}")
     private String baseUrl;
-    private Logger logger = LoggerFactory.getLogger(FCMService.class);
+    private Logger logger = LoggerFactory.getLogger(FirebaseService.class);
 
     public void sendMessageToToken(NotiSendRequest request)
             throws InterruptedException, ExecutionException {

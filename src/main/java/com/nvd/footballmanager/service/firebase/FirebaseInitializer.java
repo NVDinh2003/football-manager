@@ -13,11 +13,11 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 
 @Service
-public class FCMInitializer {
+public class FirebaseInitializer {
 
     @Value("${app.firebase-configuration-file}")
     private String firebaseConfigPath;
-    Logger logger = LoggerFactory.getLogger(FCMInitializer.class);
+    Logger logger = LoggerFactory.getLogger(FirebaseInitializer.class);
 
     @PostConstruct
     public void initialize() {

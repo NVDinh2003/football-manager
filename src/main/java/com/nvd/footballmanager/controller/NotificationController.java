@@ -8,7 +8,7 @@ import com.nvd.footballmanager.dto.notification.NotificationResponse;
 import com.nvd.footballmanager.filters.NotificationFilter;
 import com.nvd.footballmanager.model.entity.Notification;
 import com.nvd.footballmanager.service.NotificationService;
-import com.nvd.footballmanager.service.firebase.FCMService;
+import com.nvd.footballmanager.service.firebase.FirebaseService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,12 +24,12 @@ public class NotificationController extends BaseController<Notification, Notific
 
     private final NotificationService notificationService;
 
-    private final FCMService fcmService;
+    private final FirebaseService firebaseService;
 
-    protected NotificationController(NotificationService notificationService, FCMService fcmService) {
+    protected NotificationController(NotificationService notificationService, FirebaseService firebaseService) {
         super(notificationService);
         this.notificationService = notificationService;
-        this.fcmService = fcmService;
+        this.firebaseService = firebaseService;
     }
 
     @Override
@@ -40,7 +40,7 @@ public class NotificationController extends BaseController<Notification, Notific
 
     @PostMapping("/notify")
     public ResponseEntity sendNotification(@RequestBody NotiSendRequest request) throws ExecutionException, InterruptedException {
-        fcmService.sendMessageToToken(request);
+        firebaseService.sendMessageToToken(request);
         return new ResponseEntity<>(new NotificationResponse(HttpStatus.OK.value(), "Notification has been sent."), HttpStatus.OK);
     }
 
