@@ -18,6 +18,8 @@ import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -228,6 +230,12 @@ public class NotificationService extends BaseService<Notification, NotificationD
                 .map(MemberNotification::getNotification)
                 .toList();
         memberNotificationRepository.deleteAll(memberNotifications);
+        notificationRepository.deleteAll(notifications);
+    }
+
+    public void deleteOldNotifications() {
+        Instant thresholdTime = Instant.now().minus(1, ChronoUnit.WEEKS);  // - 1 week
+        List<Notification> notifications = notificationRepository.findAllByCreatedAtBefore(thresholdTime);
         notificationRepository.deleteAll(notifications);
     }
 }

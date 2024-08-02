@@ -24,6 +24,8 @@ import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
 
@@ -70,7 +72,7 @@ public class MembershipRequestService {
 
         // send noti to manager
         NotiSendRequest noti = NotiSendRequest.builder()
-                .title(user.getUsername() + Constants.USER_SEND_MEMBERSHIP_REQUEST)
+                .title(user.getUsername() + NotificationMessages.USER_SEND_MEMBERSHIP_REQUEST)
                 .content(userMapper.convertToDTO(user).toString()).build();
 
         Member manager = memberRepository.findByRoleAndTeamId(MemberRole.MANAGER, teamId);
@@ -158,5 +160,24 @@ public class MembershipRequestService {
 
         List<MembershipRequest> listReceivedRequests = membershipRepository.findAllByTeamId(teamId);
         return membershipRequestMapper.convertListToDTO(listReceivedRequests);
+    }
+
+    public void sendNotiToManagerForMembershipRequest() {
+        Instant thresholdTime = Instant.now().minus(3, ChronoUnit.DAYS);  // - 3 days ago
+        List<MembershipRequest> listReceivedRequests = membershipRepository.findByStatusAndTime(MembershipRequestStatus.PENDING, thresholdTime);
+
+        for (MembershipRequest membershipRequest : listReceivedRequests) {
+            UUID teamId = membershipRequest.getTeam().getId();
+            teamRepository.findById(teamId).orElseThrow(() -> new EntityNotFoundException(Constants.ENTITY_NOT_FOUND));
+            Member manager = memberRepository.findByRoleAndTeamId(MemberRole.MANAGER, teamId);
+
+            NotiSendRequest noti = new NotiSendRequest();
+            noti.setTitle("Remind: response membership requests!");
+            noti.setContent(String.format("%s %s, please response to membership request soon!",
+                    membershipRequest.getUser().getUsername(),
+                    NotificationMessages.USER_SEND_MEMBERSHIP_REQUEST));
+
+            notificationService.sendNotiToManager(noti, manager);
+        }
     }
 }

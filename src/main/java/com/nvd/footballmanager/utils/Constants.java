@@ -24,7 +24,6 @@ public class Constants {
     public static final String OBJECT_ALREADY_EXISTS = "OBJECT_ALREADY_EXISTS";
     public static final String ENTITY_NOT_FOUND = "Entity not found brủh!";
     public static final String ALREADY_MANAGER_OF_TEAM = "You are currently a manager of a team, you cannot create a new team!";
-    public static final String USER_SEND_MEMBERSHIP_REQUEST = " xin gia nhập đội bóng của bạn";
     public static final String SYSTEM = "System";
     public static final String MATCH_ALREADY_COMFIRMED = "Match result has been confirmed.";
     public static final int DEFAULT_PAGE_SIZE = 10;
@@ -34,4 +33,7 @@ public class Constants {
     public static final String MAX_TEAMS_LIMIT_REACHED_MESSAGE = "User has reached the maximum number of teams allowed (" + MAX_TEAMS_PER_USER + ").";
     public static final int RANK_POINT_RANGE = 6;
     public static final String DESTINATION_PUSH_NOTI = "/topic/notifications";
+
+    public static final String CRON_DELETE_OLD_NOTI = "0 0 0 ? * SUN *";  // midnight every Sunday
+    public static final String CRON_SEND_NOTI_EVERY_12_HOURS = "0 0 */12 ? * *";  // every twelve hours
 }
