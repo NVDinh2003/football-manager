@@ -33,4 +33,7 @@ public class Constants {
     public static final String MAX_TEAMS_LIMIT_REACHED_MESSAGE = "User has reached the maximum number of teams allowed (" + MAX_TEAMS_PER_USER + ").";
     public static final int RANK_POINT_RANGE = 6;
     public static final String DESTINATION_PUSH_NOTI = "/topic/notifications";
+
+    public static final String CRON_DELETE_OLD_NOTI = "0 0 0 ? * SUN *";  // midnight every Sunday
+    public static final String CRON_SEND_NOTI_EVERY_12_HOURS = "0 0 */12 ? * *";  // every twelve hours
 }
