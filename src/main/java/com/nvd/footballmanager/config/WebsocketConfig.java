@@ -19,17 +19,17 @@ public class WebsocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
-        // ... gì đó chuyển tiếp các messages đến client, clients subscribe đế nhận message
+        // ...something that forwards messages to the client, and clients subscribe to receive message
         registry.enableSimpleBroker("/topic");
-        // prefix cho các message gửi từ client đến server
+        // prefix for messages sent from client to server
         registry.setApplicationDestinationPrefixes("/ws");
-        // message gửi tới user cụ thê
+        // message sent to a specific user
         registry.setUserDestinationPrefix("/user");
     }
 
-    @Override   // register các endpoint cho WebSocket
+    @Override   // register endpoints cho WebSocket
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        // register 1 endpoint WebSocket tại /stomp, nơi các client sẽ bắt đầu phiên socket
+        // Register a WebSocket endpoint at /stomp, where clients will initiate the socket session
         registry.addEndpoint("/stomp")
                 .setAllowedOriginPatterns(URL_ACCEPT)
                 .withSockJS();  // support old browser
