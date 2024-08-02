@@ -3,12 +3,10 @@ package com.nvd.footballmanager.controller;
 import com.nvd.footballmanager.dto.CustomApiResponse;
 import com.nvd.footballmanager.dto.MembershipRequestDTO;
 import com.nvd.footballmanager.exceptions.AccessDeniedException;
-import com.nvd.footballmanager.exceptions.BadRequestException;
 import com.nvd.footballmanager.service.MemberService;
 import com.nvd.footballmanager.service.MembershipRequestService;
 import com.nvd.footballmanager.service.UserService;
 import com.nvd.footballmanager.utils.Constants;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,23 +22,6 @@ public class MembershipRequestController {
     private final MembershipRequestService membershipRequestService;
     private final MemberService memberService;
     private final UserService userService;
-
-
-    @ExceptionHandler({EntityNotFoundException.class})
-    public ResponseEntity<CustomApiResponse> entityNotFound() {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(CustomApiResponse
-                .forbidden(Constants.ENTITY_NOT_FOUND));
-    }
-
-    @ExceptionHandler({AccessDeniedException.class})
-    public ResponseEntity<CustomApiResponse> notPermission(AccessDeniedException ex) {
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(CustomApiResponse.forbidden(ex.getMessage()));
-    }
-
-    @ExceptionHandler({BadRequestException.class})
-    public ResponseEntity<CustomApiResponse> handleBadRequest(BadRequestException ex) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(CustomApiResponse.badRequest(ex.getMessage()));
-    }
 
     @PostMapping("/{teamId}")
     public ResponseEntity<CustomApiResponse> sendMembershipRequest(@PathVariable("teamId") UUID teamId) {

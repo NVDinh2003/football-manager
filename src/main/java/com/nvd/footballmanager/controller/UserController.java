@@ -38,11 +38,10 @@ public class UserController extends BaseController<User, UserDTO, BaseFilter, UU
 
 
     @GetMapping("/me")
-    public CustomApiResponse getCurrentUser() {
+    public ResponseEntity<CustomApiResponse> getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserDTO user = userService.getUserByUsername(authentication.getName());
-//        Object c = authentication.getPrincipal();
-        return CustomApiResponse.success(user);
+        return ResponseEntity.ok(CustomApiResponse.success(user));
     }
 
 

@@ -5,7 +5,6 @@ import com.nvd.footballmanager.dto.CustomApiResponse;
 import com.nvd.footballmanager.dto.MemberDTO;
 import com.nvd.footballmanager.dto.TeamDTO;
 import com.nvd.footballmanager.exceptions.AccessDeniedException;
-import com.nvd.footballmanager.exceptions.BadRequestException;
 import com.nvd.footballmanager.filters.AchievementFilter;
 import com.nvd.footballmanager.filters.BaseFilter;
 import com.nvd.footballmanager.filters.MemberFilter;
@@ -104,6 +103,7 @@ public class TeamController extends BaseController<Team, TeamDTO, BaseFilter, UU
         return ResponseEntity.ok(CustomApiResponse.success(memberService.getAllMembers(filter)));
     }
 
+
     @PostMapping("/{id}/achievements")
     public ResponseEntity<CustomApiResponse> addAchievement(@PathVariable("id") UUID teamId,
                                                             @RequestBody @Valid AchievementDTO achievementDTO) {
@@ -132,9 +132,5 @@ public class TeamController extends BaseController<Team, TeamDTO, BaseFilter, UU
         return ResponseEntity.ok(CustomApiResponse.success(achievement));
     }
 
-    @ExceptionHandler({BadRequestException.class})
-    public ResponseEntity<CustomApiResponse> handleCreateTeam(BadRequestException ex) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(CustomApiResponse.badRequest(ex.getMessage()));
-    }
 
 }

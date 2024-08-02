@@ -1,5 +1,7 @@
 package com.nvd.footballmanager.exceptions;
 
+import com.nvd.footballmanager.dto.CustomApiResponse;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -21,6 +23,21 @@ public class GlobalExceptionHandler {
             errors.put("error-" + fieldName, errorMessage);
         });
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
+    }
+
+    @ExceptionHandler({AccessDeniedException.class})
+    public ResponseEntity<CustomApiResponse> handleAccessDenied(AccessDeniedException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(CustomApiResponse.forbidden(ex.getMessage()));
+    }
+
+    @ExceptionHandler({EntityNotFoundException.class})
+    public ResponseEntity<CustomApiResponse> handleEntityNotFound(EntityNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(CustomApiResponse.notFound(ex.getMessage()));
+    }
+
+    @ExceptionHandler({BadRequestException.class})
+    public ResponseEntity<CustomApiResponse> handleBadRequest(BadRequestException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(CustomApiResponse.badRequest(ex.getMessage()));
     }
 
 }

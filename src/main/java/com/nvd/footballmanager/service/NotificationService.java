@@ -9,15 +9,22 @@ import com.nvd.footballmanager.model.entity.*;
 import com.nvd.footballmanager.model.enums.MemberRole;
 import com.nvd.footballmanager.repository.*;
 import com.nvd.footballmanager.utils.Constants;
+import com.nvd.footballmanager.utils.NotificationMessages;
 import jakarta.persistence.EntityNotFoundException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.messaging.MessageDeliveryException;
+import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 public class NotificationService extends BaseService<Notification, NotificationDTO, NotificationFilter, UUID> {
 
     private final NotificationRepository notificationRepository;
@@ -28,6 +35,7 @@ public class NotificationService extends BaseService<Notification, NotificationD
     private final TeamRepository teamRepository;
     private final UserRepository userRepository;
     private final UserService userService;
+    private final SimpMessageSendingOperations simpMessageSendingOperations;
 
     protected NotificationService(NotificationRepository notificationRepository,
                                   NotificationMapper notificationMapper,
@@ -36,7 +44,7 @@ public class NotificationService extends BaseService<Notification, NotificationD
                                   MemberRepository memberRepository,
                                   TeamRepository teamRepository,
                                   UserRepository userRepository,
-                                  UserService userService) {
+                                  UserService userService, SimpMessageSendingOperations simpMessageSendingOperations) {
         super(notificationRepository, notificationMapper);
         this.notificationRepository = notificationRepository;
         this.notificationMapper = notificationMapper;
@@ -46,6 +54,7 @@ public class NotificationService extends BaseService<Notification, NotificationD
         this.teamRepository = teamRepository;
         this.userRepository = userRepository;
         this.userService = userService;
+        this.simpMessageSendingOperations = simpMessageSendingOperations;
     }
 
     @Transactional
@@ -57,6 +66,14 @@ public class NotificationService extends BaseService<Notification, NotificationD
         notification.setUser(user);
 
         notificationRepository.save(notification);
+
+        try {
+            simpMessageSendingOperations
+                    .convertAndSendToUser(user.getUsername(),
+                            Constants.DESTINATION_PUSH_NOTI, notificationMapper.convertToDTO(notification));
+        } catch (MessageDeliveryException e) {
+            log.error(NotificationMessages.FAIL_SEND_NOTI_SIZE_LIMIT, e.getMessage());
+        }
     }
 
     @Transactional
@@ -77,6 +94,13 @@ public class NotificationService extends BaseService<Notification, NotificationD
 
         notification.setMemberRecipients(recipients);
         notificationRepository.save(notification);
+        try {
+            simpMessageSendingOperations
+                    .convertAndSendToUser(manager.getUser().getUsername(),
+                            Constants.DESTINATION_PUSH_NOTI, notificationMapper.convertToDTO(notification));
+        } catch (MessageDeliveryException e) {
+            log.error(NotificationMessages.FAIL_SEND_NOTI_SIZE_LIMIT, e.getMessage());
+        }
     }
 
     @Transactional
@@ -106,6 +130,13 @@ public class NotificationService extends BaseService<Notification, NotificationD
                 memberNotification.setMember(member);
                 memberNotification.setNotification(notification);
                 memberNotification = memberNotificationRepository.save(memberNotification);
+                try {
+                    simpMessageSendingOperations
+                            .convertAndSendToUser(member.getUser().getUsername(),
+                                    Constants.DESTINATION_PUSH_NOTI, notificationMapper.convertToDTO(notification));
+                } catch (MessageDeliveryException e) {
+                    log.error(NotificationMessages.FAIL_SEND_NOTI_SIZE_LIMIT, e.getMessage());
+                }
                 recipients.add(memberNotification);
             }
         }
@@ -132,9 +163,15 @@ public class NotificationService extends BaseService<Notification, NotificationD
 
     private void checkPermissionToReadNoti(UUID notiId) {
         Notification noti = notificationRepository.findById(notiId).orElseThrow(() -> new EntityNotFoundException(Constants.ENTITY_NOT_FOUND));
-        UUID teamId = noti.getTeam().getId();
-        if (memberService.currentUserMemberInTeam(teamId).isEmpty())
-            throw new AccessDeniedException(Constants.ACCESS_DENIED);
+        if (noti.getTeam() != null) {
+            UUID teamId = noti.getTeam().getId();
+            if (memberService.currentUserMemberInTeam(teamId).isEmpty())
+                throw new AccessDeniedException(Constants.ACCESS_DENIED);
+        } else if (noti.getUser() != null) {
+            UUID userId = noti.getUser().getId();
+            if (!userService.getCurrentUser().getId().equals(userId))
+                throw new AccessDeniedException(Constants.ACCESS_DENIED);
+        }
     }
 
     @Transactional
@@ -193,6 +230,12 @@ public class NotificationService extends BaseService<Notification, NotificationD
                 .map(MemberNotification::getNotification)
                 .toList();
         memberNotificationRepository.deleteAll(memberNotifications);
+        notificationRepository.deleteAll(notifications);
+    }
+
+    public void deleteOldNotifications() {
+        Instant thresholdTime = Instant.now().minus(1, ChronoUnit.WEEKS);  // - 1 week
+        List<Notification> notifications = notificationRepository.findAllByCreatedAtBefore(thresholdTime);
         notificationRepository.deleteAll(notifications);
     }
 }
