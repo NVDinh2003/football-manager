@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.UUID;
 
 @Repository
@@ -23,4 +24,8 @@ public interface MatchRepository extends BaseRepository<Match, MatchFilter, UUID
             AND (:#{#filter.toDate == NULL} = TRUE OR m.time <= :#{#filter.toDate})
             """)
     Page<Match> findAllWithFilter(Pageable pageable, MatchFilter filter);
+
+    @Query(value = "SELECT * FROM matches LIMIT ?2 OFFSET ?1", nativeQuery = true)
+    List<Match> findRandomLimitOffset(int offset, int limit);
+
 }

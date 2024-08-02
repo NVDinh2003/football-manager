@@ -2,7 +2,6 @@
 //
 //import com.github.javafaker.Faker;
 //import com.nvd.footballmanager.model.entity.FinancialRecord;
-//import com.nvd.footballmanager.model.entity.Team;
 //import com.nvd.footballmanager.model.enums.FinancialRecordType;
 //import com.nvd.footballmanager.repository.TeamRepository;
 //import com.nvd.footballmanager.seeder.GenericDataReader;
@@ -56,10 +55,10 @@
 //
 //    @Override
 //    public List<FinancialRecord> generateDataBatch(int batchSize) {
-//        List<Team> teams = teamRepository.findAll();
+////        List<Team> teams = teamRepository.findAll();
 //        List<Future<FinancialRecord>> futures = new ArrayList<>();
 //        for (int i = 0; i < batchSize; i++) {
-//            futures.add(((ThreadPoolTaskExecutor) taskExecutor).submit(() -> generateData(teams)));
+//            futures.add(((ThreadPoolTaskExecutor) taskExecutor).submit(() -> generateData()));
 //        }
 //        List<FinancialRecord> records = new ArrayList<>(batchSize);
 //        for (Future<FinancialRecord> future : futures) {
@@ -72,7 +71,8 @@
 //        return records;
 //    }
 //
-//    public FinancialRecord generateData(List<Team> teams) {
+//    @Override
+//    public FinancialRecord generateData() {
 //        Faker faker = fakerThreadLocal.get();
 //
 //        FinancialRecord record = new FinancialRecord();
@@ -84,7 +84,7 @@
 //        int multiplier = faker.number().numberBetween(30, 211);
 //        record.setAmount(multiplier * 5000);
 //        record.setDate(faker.date().past(500, TimeUnit.DAYS).toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
-//        record.setTeam(teams.get(faker.random().nextInt(teams.size())));
+////        record.setTeam(teams.get(faker.random().nextInt(teams.size())));
 //        record.setCreatedAt(faker.date().past(1000, TimeUnit.DAYS).toInstant());
 //        record.setUpdatedAt(faker.date().between(Date.from(record.getCreatedAt()),
 //                Date.from(record.getCreatedAt().plus(5, ChronoUnit.DAYS))).toInstant());
@@ -92,8 +92,8 @@
 //        return record;
 //    }
 //
-//    @Override
-//    public FinancialRecord generateData() {
-//        return null;
-//    }
+////    @Override
+////    public FinancialRecord generateData() {
+////        return null;
+////    }
 //}

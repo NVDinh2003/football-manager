@@ -57,7 +57,8 @@
 //    @Override
 //    public List<MatchRequest> generateDataBatch(int batchSize) {
 //        List<Future<MatchRequest>> futures = new ArrayList<>();
-//        List<Team> teams = teamRepository.findAll();
+////        List<Team> teams = teamRepository.findAll();
+//        List<Team> teams = null;
 //        for (int i = 0; i < batchSize; i++) {
 //            futures.add(((ThreadPoolTaskExecutor) taskExecutor).submit(() -> generateData(teams)));
 //        }
@@ -95,7 +96,7 @@
 //        matchRequest.setMatchType(MatchType.values()[faker.number().numberBetween(0, MatchType.values().length)]);
 //        matchRequest.setNote(faker.lorem().sentence());
 //        matchRequest.setStatus(MatchRequestStatus.values()[faker.number().numberBetween(0, MatchRequestStatus.values().length)]);
-//        matchRequest.setTeam(teams.get(faker.random().nextInt(teams.size())));
+////        matchRequest.setTeam(teams.get(faker.random().nextInt(teams.size())));
 //
 //        return matchRequest;
 //    }

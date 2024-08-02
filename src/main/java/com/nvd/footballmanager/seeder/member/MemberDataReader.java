@@ -92,7 +92,7 @@
 //    public List<Member> generateDataBatch(int batchSize) {
 //        Pageable teamLimit = Pageable.ofSize(693);
 //        List<Team> teams = teamRepository.findAll(teamLimit).getContent();
-//                List<User> users = userRepository.findRandomLimit(batchSize);
+//        List<User> users = userRepository.findRandomLimit(batchSize);
 //        List<Team> teams = teamRepository.findRandomLimit(batchSize);
 //        List<Future<Member>> futures = new ArrayList<>();
 //        for (int i = 0; i < batchSize; i++) {

@@ -40,7 +40,8 @@
 //    @Override
 //    public List<Feed> generateDataBatch(int batchSize) {
 //        List<Future<Feed>> futures = new ArrayList<>();
-//        List<User> users = userRepository.findRandomLimit(batchSize);
+////        List<User> users = userRepository.findRandomLimit(batchSize);
+//        List<User> users = null;
 //        List<MatchRequest> matchRequests = matchRequestRepository.findRandomLimit(batchSize);
 //
 //        for (int i = 0; i < batchSize; i++) {
@@ -65,7 +66,7 @@
 //        feed.setTitle(faker.lorem().sentence());
 //        feed.setContent(faker.lorem().paragraph());
 //
-//        feed.setUser(users.get(faker.number().numberBetween(0, users.size())));
+////        feed.setUser(users.get(faker.number().numberBetween(0, users.size())));
 //
 //        if (faker.bool().bool()) { // 50/50 gán MatchRequest
 //            feed.setMatchRequest(matchRequests.get(faker.number().numberBetween(0, matchRequests.size())));

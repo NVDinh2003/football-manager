@@ -44,4 +44,7 @@ public interface MemberRepository extends BaseRepository<Member, MemberFilter, U
     long countByUserId(UUID userId);
 
     List<Member> findAllByRole(MemberRole memberRole);
+
+    @Query(value = "SELECT * FROM members LIMIT ?1", nativeQuery = true)
+    List<Member> findRandomLimit(int limit);
 }
