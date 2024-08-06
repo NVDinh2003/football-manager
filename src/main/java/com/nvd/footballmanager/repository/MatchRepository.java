@@ -25,7 +25,10 @@ public interface MatchRepository extends BaseRepository<Match, MatchFilter, UUID
             """)
     Page<Match> findAllWithFilter(Pageable pageable, MatchFilter filter);
 
-    @Query(value = "SELECT * FROM matches LIMIT ?2 OFFSET ?1", nativeQuery = true)
-    List<Match> findRandomLimitOffset(int offset, int limit);
+    @Query(value = "SELECT m.id FROM matches m LIMIT ?2 OFFSET ?1", nativeQuery = true)
+    List<String> findRandomLimitOffset(int offset, int limit);
+
+    @Query(value = "SELECT m.id FROM matches m", nativeQuery = true)
+    List<String> findAllMatchIds();
 
 }
