@@ -35,4 +35,14 @@ public interface MatchRequestRepository extends BaseRepository<MatchRequest, Mat
             OR (:#{#filter.rankPoints == null} = TRUE OR m.team.rankPoints <= :#{#filter.rankPoints} + :#{#filter.rankPointRange})
             """)
     Page<MatchRequest> suggest(Pageable pageable, MatchRequestFilter filter);
+
+    @Query(
+            value = "SELECT * FROM match_requests mr " +
+                    "WHERE mr.time BETWEEN NOW() AND DATE_ADD(NOW(), INTERVAL 7 DAY) " +
+                    "AND status = 'DONE'",
+            countQuery = "SELECT count(*) FROM match_requests mr " +
+                    "WHERE mr.time BETWEEN NOW() AND DATE_ADD(NOW(), INTERVAL 7 DAY) " +
+                    "AND status = 'DONE'",
+            nativeQuery = true)
+    Page<MatchRequest> findUpcomingMatches(Pageable pageable);
 }

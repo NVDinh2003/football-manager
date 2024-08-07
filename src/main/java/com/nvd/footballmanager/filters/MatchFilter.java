@@ -17,4 +17,6 @@ public class MatchFilter extends BaseFilter {
     private Instant fromDate;
     private Instant toDate;
     private String venue;
+
+    private UUID memberId;
 }

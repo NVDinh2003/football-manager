@@ -40,6 +40,7 @@ public class MatchRequest {
     private MatchRequestStatus status = MatchRequestStatus.NEW;
 
     @OneToOne(mappedBy = "matchRequest")
+//    @JsonIgnore
     private Feed feed;
 
     @ManyToOne(fetch = FetchType.LAZY)
